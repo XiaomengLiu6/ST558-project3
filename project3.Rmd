@@ -1,0 +1,26 @@
+---
+title: "project3"
+author: "Xiaomeng Liu"
+date: "2023-11-05"
+output:
+  github_document:
+    toc: true
+    toc_depth: 3
+    number_sections: false
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, message=FALSE}
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+```
+
+```{r}
+diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+```
