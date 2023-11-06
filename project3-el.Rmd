@@ -196,6 +196,30 @@ bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
 # Modeling
 
 ```{r}
+#prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
+#we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
+temp$Diabetes_binary	 <- NULL 
+temp$HighBP	 <- NULL
+temp$HighChol	 <- NULL
+temp$CholCheck	 <- NULL
+temp$Smoker	 <- NULL
+temp$Stroke	 <- NULL
+temp$HeartDiseaseorAttack	 <- NULL
+temp$PhysActivity	 <- NULL
+temp$Fruits	 <- NULL
+temp$Veggies	 <- NULL
+temp$HvyAlcoholConsump	 <- NULL
+temp$AnyHealthcare	 <- NULL
+temp$NoDocbcCost	 <- NULL 
+temp$GenHlth <-  NULL
+temp$DiffWalk	 <- NULL
+temp$Sex	 <- NULL
+temp$Age	 <- NULL
+temp$Education	 <- NULL
+temp$Education_f	 <- NULL
+temp$Income	 <- NULL
+
+
 # set the seed
 set.seed(433)
 # split the training and testing
