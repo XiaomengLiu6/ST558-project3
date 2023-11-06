@@ -80,7 +80,7 @@ library(caret)
 ### Read in the data
 ```{r}
 #read in csv file
-diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
+diabetes<-read.csv("C:\\Users\\elauf\\Desktop\\ST558\\topic3\\project3-2023-11-08\\diabetes_binary_health_indicators_BRFSS2015.csv")
 ```
 
 ### Combine 1 and 2 Education levels
@@ -124,7 +124,74 @@ temp <- subset(diabetes, Education==params$ed_level)
 
 # Summarizations
 
-EDA done by ERich
+```{r}
+#confirm that we're working with the desired set of cases
+table(temp$Education, temp$Education_f)
+ggplot(data=temp, aes(x=Education_f)) + 
+  geom_dotplot(binwidth = .05, method = "histodot") + 
+  labs(title = "confirm that we're working with the desired set of cases")
+
+
+#function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
+#(I still need to flesh out this function such that it labels the plots)
+explore <- function(by_var)
+{
+results1 <- temp %>%
+  group_by({{by_var}}) %>%
+  summarize(diabetes_rate = mean(Diabetes_binary))
+    #passing variable names to function using curly brackets:
+    #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
+print(results1)
+
+results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
+  geom_bar(stat="count")
+print(results2)
+}
+
+#probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
+explore(by_var = HighBP_f)
+explore(by_var = HighChol_f)
+explore(by_var = CholCheck_f)
+explore(by_var = Smoker_f)
+explore(by_var = Stroke_f)
+explore(by_var = HeartDiseaseorAttack_f)
+explore(by_var = PhysActivity_f)
+explore(by_var = Fruits_f)
+explore(by_var = Veggies_f)
+explore(by_var = HvyAlcoholConsump_f)
+explore(by_var = AnyHealthcare_f)
+explore(by_var = NoDocbcCost_f)
+explore(by_var = GenHlth_f)
+explore(by_var = DiffWalk_f)
+explore(by_var = Sex_f)
+explore(by_var = Age_f)
+explore(by_var = Income_f)
+
+
+
+#correlation matrix (outcome var x continuous vars)
+corr_vars <-
+  temp %>% select(c(Diabetes_binary, BMI, MentHlth, PhysHlth))
+correlation <- cor(corr_vars, method = "spearman")
+corrplot(correlation, type = "upper", tl.pos = "lt")
+corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
+
+
+
+#density plots / boxplots (outcome var x continuous vars)
+#I'm guessing we could just choose one or the other
+ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
+  geom_density(adjust = 0.5, alpha = 0.5)
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
+
+ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
+  geom_density(adjust = 0.5, alpha = 0.5)
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
+
+ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
+  geom_density(adjust = 0.5, alpha = 0.5)
+bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
+```
 
 # Modeling
 
@@ -133,8 +200,8 @@ EDA done by ERich
 set.seed(433)
 # split the training and testing
 indextrain<-createDataPartition(y=temp$Diabetes_binary,p=0.7,list=FALSE)
-ed_train<-ed_level2[indextrain,]
-ed_test<-ed_level2[-indextrain,]
+ed_train<-temp[indextrain,]
+ed_test<-temp[-indextrain,]
 ```
 
 #### what log loss is:
@@ -149,7 +216,7 @@ logistic regression is and why we apply it to this kind of data. Then they shoul
 three candidate logistic regression models and choose the best model.
 
 ```{r logistic}
-ed_logistic<-train(Diabetes_binary_f~.,data=ed_level2,
+ed_logistic<-train(Diabetes_binary_f~.,data=temp,
              method="glm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5),
