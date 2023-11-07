@@ -116,8 +116,43 @@ diabetes$Sex_f	 <- as.factor(diabetes$Sex)
 diabetes$Age_f	 <- as.factor(diabetes$Age)
 diabetes$Education_f	 <- as.factor(diabetes$Education)
 diabetes$Income_f	 <- as.factor(diabetes$Income)
+```
+
+>
+#create factor version of variables, where applicable
+#in order to facilitate the EDA, for now at least, we'll retain both the factor version and the numeric version of each variable (we may need to drop one version, though, before running models)
+#we've got to jump through some hoops here because the random forest model doesn't like factor variables storing values of 0/1/etc...maybe theres a more elegant way of doing this, Idunno
+yn <- function(var, var_f)
+{
+var_f <- factor(var, levels = make.names(levels(var), unique=TRUE))
+}
+
+>                            
+yn(var = diabetes$Diabetes_binary, var_f = diabetes$Diabetes_binary_f)
+yn(var = diabetes$HighBP, var_f = diabetes$HighBP_f)
+yn(var = diabetes$HighChol, var_f = diabetes$HighChol_f)
+yn(var = diabetes$CholCheck, var_f = diabetes$CholCheck_f)
+#BMI -- this is a continuous var
+yn(var = diabetes$Smoker, var_f = diabetes$Smoker_f)
+yn(var = diabetes$Stroke, var_f = diabetes$Stroke_f)
+yn(var = diabetes$HeartDiseaseorAttack, var_f = diabetes$HeartDiseaseorAttack_f)
+yn(var = diabetes$PhysActivity, var_f = diabetes$PhysActivity_f)
+yn(var = diabetes$Fruits, var_f = diabetes$Fruits_f)
+yn(var = diabetes$Veggies, var_f = diabetes$Veggies_f)
+yn(var = diabetes$HvyAlcoholConsump, var_f = diabetes$HvyAlcoholConsump_f)
+yn(var = diabetes$AnyHealthcare, var_f = diabetes$AnyHealthcare_f)
+yn(var = diabetes$NoDocbcCost, var_f = diabetes$NoDocbcCost_f)
+#MentHlth -- this is a continuous var
+#PhysHlth -- this is a continuous var
+yn(var = diabetes$DiffWalk, var_f = diabetes$DiffWalk_f) 
+yn(var = diabetes$GenHlth, var_f = diabetes$GenHlth_f)
+yn(var = diabetes$Age, var_f = diabetes$Age_f) 
+yn(var = diabetes$Income, var_f = diabetes$Income_f)
+yn(var = diabetes$Sex, var_f = diabetes$Sex_f)
+yn(var = diabetes$Education, var_f = diabetes$Education_f)
 
 
+```{r}
 #subset to specific level of education per *params* setting
 temp <- subset(diabetes, Education==params$ed_level)
 ```
@@ -223,7 +258,7 @@ temp$Income	 <- NULL
 # set the seed
 set.seed(433)
 # split the training and testing
-indextrain<-createDataPartition(y=temp$Diabetes_binary,p=0.7,list=FALSE)
+indextrain<-createDataPartition(y=temp$Diabetes_binary_f,p=0.7,list=FALSE)
 ed_train<-temp[indextrain,]
 ed_test<-temp[-indextrain,]
 ```
@@ -257,6 +292,19 @@ Erich part
 Erich part
 
 #### Fourth method: Random forest
+```{r}
+rf_fit <- train(Diabetes_binary_f ~ ., data = temp,
+  method = "rf",
+  metric = "logLoss",
+  preProcess = c("center", "scale"),
+  trControl = trainControl(method = "cv", number = 5, classProbs=TRUE,
+                            summaryFunction = mnLogLoss),
+  tuneGrid = data.frame(mtry = 1:20))
+
+rf_fit
+
+#confusionMatrix(data = ed_test$Diabetes_binary_f, reference = predict(rf_fit, newdata = ed_test))
+```
 
 #### Fifth method: 
 
