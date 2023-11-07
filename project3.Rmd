@@ -274,14 +274,9 @@ Erich part
 
 #### Fourth method: Random forest
 
-#### Fifth method: 
-
-new method by Erich
-
-#### Sixth method:
-
+The random forest uses the same idea as bagging. It creates multiple trees from bootstrap samples and averages results. It uses a random subset of predictors for each bootstrap sample fit. We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
 ```{r,cache=FALSE}
-ed_rf<-train(Diabetes_binary_f~BMI+HighChol_f,data=temp,
+ed_rf<-train(Diabetes_binary_f~BMI+HighBP_f+HighChol_f,data=temp,
              method="rf", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
@@ -290,6 +285,22 @@ ed_rf<-train(Diabetes_binary_f~BMI+HighChol_f,data=temp,
 )
 ed_rf
 ```
+#### Fifth method: 
+
+new method by Erich
+
+#### Sixth method: Bayesian Generalized Linear Model
+```{r,cache=FALSE}
+ed_bglm<-train(Diabetes_binary_f~.,data=temp,
+             method="bayesglm", 
+             metric="logLoss",
+             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+             preProcess=c("center","scale")#,
+             #tuneGrid=data.frame(K.prov=7)
+)
+ed_bglm
+```
+
 # Final Model Selection
 
 You should now have six best models (one for each model type above)
