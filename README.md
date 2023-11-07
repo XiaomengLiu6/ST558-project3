@@ -126,33 +126,364 @@ diabetes$Education_f     <- as.factor(diabetes$Education)
 diabetes$Income_f    <- as.factor(diabetes$Income)
 
 
-#separate dataset for each education level
-ed_level2 <- subset(diabetes, Education==2)
-ed_level3 <- subset(diabetes, Education==3)
-ed_level4 <- subset(diabetes, Education==4)
-ed_level5 <- subset(diabetes, Education==5)
-ed_level6 <- subset(diabetes, Education==6)
+#subset to specific level of education per *params* setting
+temp <- subset(diabetes, Education==4)
 ```
 
 # Summarizations
 
-EDA done by ERich
+``` r
+#confirm that we're working with the desired set of cases
+table(temp$Education, temp$Education_f)
+```
+
+    ##    
+    ##         2     3     4     5     6
+    ##   4     0     0 62750     0     0
+
+``` r
+ggplot(data=temp, aes(x=Education_f)) + 
+  geom_dotplot(binwidth = .05, method = "histodot") + 
+  labs(title = "confirm that we're working with the desired set of cases")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
+
+``` r
+#function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
+#(I still need to flesh out this function such that it labels the plots)
+explore <- function(by_var)
+{
+results1 <- temp %>%
+  group_by({{by_var}}) %>%
+  summarize(diabetes_rate = mean(Diabetes_binary))
+    #passing variable names to function using curly brackets:
+    #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
+print(results1)
+
+results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
+  geom_bar(stat="count")
+print(results2)
+}
+
+#probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
+explore(by_var = HighBP_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   HighBP_f diabetes_rate
+    ##   <fct>            <dbl>
+    ## 1 0               0.0830
+    ## 2 1               0.268
+
+![](README_files/figure-gfm/unnamed-chunk-46-2.png)<!-- -->
+
+``` r
+explore(by_var = HighChol_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   HighChol_f diabetes_rate
+    ##   <fct>              <dbl>
+    ## 1 0                  0.107
+    ## 2 1                  0.257
+
+![](README_files/figure-gfm/unnamed-chunk-46-3.png)<!-- -->
+
+``` r
+explore(by_var = CholCheck_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   CholCheck_f diabetes_rate
+    ##   <fct>               <dbl>
+    ## 1 0                  0.0374
+    ## 2 1                  0.182
+
+![](README_files/figure-gfm/unnamed-chunk-46-4.png)<!-- -->
+
+``` r
+explore(by_var = Smoker_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   Smoker_f diabetes_rate
+    ##   <fct>            <dbl>
+    ## 1 0                0.170
+    ## 2 1                0.182
+
+![](README_files/figure-gfm/unnamed-chunk-46-5.png)<!-- -->
+
+``` r
+explore(by_var = Stroke_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   Stroke_f diabetes_rate
+    ##   <fct>            <dbl>
+    ## 1 0                0.168
+    ## 2 1                0.322
+
+![](README_files/figure-gfm/unnamed-chunk-46-6.png)<!-- -->
+
+``` r
+explore(by_var = HeartDiseaseorAttack_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   HeartDiseaseorAttack_f diabetes_rate
+    ##   <fct>                          <dbl>
+    ## 1 0                              0.154
+    ## 2 1                              0.340
+
+![](README_files/figure-gfm/unnamed-chunk-46-7.png)<!-- -->
+
+``` r
+explore(by_var = PhysActivity_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   PhysActivity_f diabetes_rate
+    ##   <fct>                  <dbl>
+    ## 1 0                      0.223
+    ## 2 1                      0.153
+
+![](README_files/figure-gfm/unnamed-chunk-46-8.png)<!-- -->
+
+``` r
+explore(by_var = Fruits_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   Fruits_f diabetes_rate
+    ##   <fct>            <dbl>
+    ## 1 0                0.185
+    ## 2 1                0.170
+
+![](README_files/figure-gfm/unnamed-chunk-46-9.png)<!-- -->
+
+``` r
+explore(by_var = Veggies_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   Veggies_f diabetes_rate
+    ##   <fct>             <dbl>
+    ## 1 0                 0.200
+    ## 2 1                 0.168
+
+![](README_files/figure-gfm/unnamed-chunk-46-10.png)<!-- -->
+
+``` r
+explore(by_var = HvyAlcoholConsump_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   HvyAlcoholConsump_f diabetes_rate
+    ##   <fct>                       <dbl>
+    ## 1 0                          0.182 
+    ## 2 1                          0.0743
+
+![](README_files/figure-gfm/unnamed-chunk-46-11.png)<!-- -->
+
+``` r
+explore(by_var = AnyHealthcare_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   AnyHealthcare_f diabetes_rate
+    ##   <fct>                   <dbl>
+    ## 1 0                       0.128
+    ## 2 1                       0.180
+
+![](README_files/figure-gfm/unnamed-chunk-46-12.png)<!-- -->
+
+``` r
+explore(by_var = NoDocbcCost_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   NoDocbcCost_f diabetes_rate
+    ##   <fct>                 <dbl>
+    ## 1 0                     0.174
+    ## 2 1                     0.195
+
+![](README_files/figure-gfm/unnamed-chunk-46-13.png)<!-- -->
+
+``` r
+explore(by_var = GenHlth_f)
+```
+
+    ## # A tibble: 5 × 2
+    ##   GenHlth_f diabetes_rate
+    ##   <fct>             <dbl>
+    ## 1 1                0.0367
+    ## 2 2                0.0883
+    ## 3 3                0.189 
+    ## 4 4                0.316 
+    ## 5 5                0.370
+
+![](README_files/figure-gfm/unnamed-chunk-46-14.png)<!-- -->
+
+``` r
+explore(by_var = DiffWalk_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   DiffWalk_f diabetes_rate
+    ##   <fct>              <dbl>
+    ## 1 0                  0.135
+    ## 2 1                  0.316
+
+![](README_files/figure-gfm/unnamed-chunk-46-15.png)<!-- -->
+
+``` r
+explore(by_var = Sex_f)
+```
+
+    ## # A tibble: 2 × 2
+    ##   Sex_f diabetes_rate
+    ##   <fct>         <dbl>
+    ## 1 0             0.174
+    ## 2 1             0.180
+
+![](README_files/figure-gfm/unnamed-chunk-46-16.png)<!-- -->
+
+``` r
+explore(by_var = Age_f)
+```
+
+    ## # A tibble: 13 × 2
+    ##    Age_f diabetes_rate
+    ##    <fct>         <dbl>
+    ##  1 1            0.0195
+    ##  2 2            0.0268
+    ##  3 3            0.0426
+    ##  4 4            0.0712
+    ##  5 5            0.0953
+    ##  6 6            0.131 
+    ##  7 7            0.150 
+    ##  8 8            0.170 
+    ##  9 9            0.210 
+    ## 10 10           0.246 
+    ## 11 11           0.245 
+    ## 12 12           0.233 
+    ## 13 13           0.195
+
+![](README_files/figure-gfm/unnamed-chunk-46-17.png)<!-- -->
+
+``` r
+explore(by_var = Income_f)
+```
+
+    ## # A tibble: 8 × 2
+    ##   Income_f diabetes_rate
+    ##   <fct>            <dbl>
+    ## 1 1               0.246 
+    ## 2 2               0.268 
+    ## 3 3               0.233 
+    ## 4 4               0.214 
+    ## 5 5               0.182 
+    ## 6 6               0.158 
+    ## 7 7               0.138 
+    ## 8 8               0.0979
+
+![](README_files/figure-gfm/unnamed-chunk-46-18.png)<!-- -->
+
+``` r
+#correlation matrix (outcome var x continuous vars)
+corr_vars <-
+  temp %>% select(c(Diabetes_binary, BMI, MentHlth, PhysHlth))
+correlation <- cor(corr_vars, method = "spearman")
+corrplot(correlation, type = "upper", tl.pos = "lt")
+corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-19.png)<!-- -->
+
+``` r
+#density plots / boxplots (outcome var x continuous vars)
+#I'm guessing we could just choose one or the other
+ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
+  geom_density(adjust = 0.5, alpha = 0.5)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-20.png)<!-- -->
+
+``` r
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-21.png)<!-- -->
+
+``` r
+ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
+  geom_density(adjust = 0.5, alpha = 0.5)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-22.png)<!-- -->
+
+``` r
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-23.png)<!-- -->
+
+``` r
+ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
+  geom_density(adjust = 0.5, alpha = 0.5)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-46-24.png)<!-- -->
+
+``` r
+bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
+```
 
 # Modeling
+
+``` r
+#prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
+#we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
+temp$Diabetes_binary     <- NULL 
+temp$HighBP  <- NULL
+temp$HighChol    <- NULL
+temp$CholCheck   <- NULL
+temp$Smoker  <- NULL
+temp$Stroke  <- NULL
+temp$HeartDiseaseorAttack    <- NULL
+temp$PhysActivity    <- NULL
+temp$Fruits  <- NULL
+temp$Veggies     <- NULL
+temp$HvyAlcoholConsump   <- NULL
+temp$AnyHealthcare   <- NULL
+temp$NoDocbcCost     <- NULL 
+temp$GenHlth <-  NULL
+temp$DiffWalk    <- NULL
+temp$Sex     <- NULL
+temp$Age     <- NULL
+temp$Education   <- NULL
+temp$Education_f     <- NULL
+temp$Income  <- NULL
+```
 
 ``` r
 # set the seed
 set.seed(433)
 # split the training and testing
-indextrain<-createDataPartition(y=ed_level2$Diabetes_binary,p=0.7,list=FALSE)
-ed_train<-ed_level2[indextrain,]
-ed_test<-ed_level2[-indextrain,]
+indextrain<-createDataPartition(y=temp$Diabetes_binary,p=0.7,list=FALSE)
+ed_train<-temp[indextrain,]
+ed_test<-temp[-indextrain,]
 ```
 
 #### what log loss is:
 
-The first group member should research and write up a paragraph about
-what log loss is and why we may prefer it to things like accuracy.
+Log loss is a common evaluation metric for binary classification models.
+It measure the performance of a model by quantifying the difference
+between predicted probabilities and actual values. We prefer it because
+log loss penalizes confident and incorrect predictors more heavily.It
+also provides a continuous and differentiable meausre of the model’s
+performance, making it suitable of optimization algorithms.
 
 #### First method: logistic regression
 
@@ -162,78 +493,53 @@ data. Then they should fit three candidate logistic regression models
 and choose the best model.
 
 ``` r
-ed_logistic<-train(Diabetes_binary_f~.,data=ed_level2,
+temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
+ed_logistic<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=temp,
              method="glm", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5),
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
-```
-
-    ## Warning in train.default(x, y, weights = w, ...): The metric "logLoss" was not in the result set. Accuracy will be used instead.
-
-    ## Warning in preProcess.default(thresh = 0.95, k = 5, freqCut = 19, uniqueCut = 10, : These variables have zero variances: Education,
-    ## Education_f3, Education_f4, Education_f5, Education_f6
-
-    ## Warning: glm.fit: algorithm did not converge
-
-    ## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == : prediction from rank-deficient fit; attr(*, "non-estim") has
-    ## doubtful cases
-
-    ## Warning in preProcess.default(thresh = 0.95, k = 5, freqCut = 19, uniqueCut = 10, : These variables have zero variances: Education,
-    ## Education_f3, Education_f4, Education_f5, Education_f6
-
-    ## Warning: glm.fit: algorithm did not converge
-
-    ## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == : prediction from rank-deficient fit; attr(*, "non-estim") has
-    ## doubtful cases
-
-    ## Warning in preProcess.default(thresh = 0.95, k = 5, freqCut = 19, uniqueCut = 10, : These variables have zero variances: Education,
-    ## Education_f3, Education_f4, Education_f5, Education_f6
-
-    ## Warning: glm.fit: algorithm did not converge
-
-    ## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == : prediction from rank-deficient fit; attr(*, "non-estim") has
-    ## doubtful cases
-
-    ## Warning in preProcess.default(thresh = 0.95, k = 5, freqCut = 19, uniqueCut = 10, : These variables have zero variances: Education,
-    ## Education_f3, Education_f4, Education_f5, Education_f6
-
-    ## Warning: glm.fit: algorithm did not converge
-
-    ## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == : prediction from rank-deficient fit; attr(*, "non-estim") has
-    ## doubtful cases
-
-    ## Warning in preProcess.default(thresh = 0.95, k = 5, freqCut = 19, uniqueCut = 10, : These variables have zero variances: Education,
-    ## Education_f3, Education_f4, Education_f5, Education_f6
-
-    ## Warning: glm.fit: algorithm did not converge
-
-    ## Warning in predict.lm(object, newdata, se.fit, scale = 1, type = if (type == : prediction from rank-deficient fit; attr(*, "non-estim") has
-    ## doubtful cases
-
-    ## Warning in preProcess.default(thresh = 0.95, k = 5, freqCut = 19, uniqueCut = 10, : These variables have zero variances: Education,
-    ## Education_f3, Education_f4, Education_f5, Education_f6
-
-    ## Warning: glm.fit: algorithm did not converge
-
-``` r
 ed_logistic
 ```
 
     ## Generalized Linear Model 
     ## 
-    ## 4217 samples
-    ##   40 predictor
-    ##    2 classes: '0', '1' 
+    ## 62750 samples
+    ##     3 predictor
+    ##     2 classes: 'no', 'yes' 
     ## 
-    ## Pre-processing: centered (63), scaled (63) 
+    ## Pre-processing: centered (3), scaled (3) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 3374, 3373, 3374, 3373, 3374 
+    ## Summary of sample sizes: 50199, 50201, 50200, 50200, 50200 
     ## Resampling results:
     ## 
-    ##   Accuracy  Kappa
-    ##   1         1
+    ##   logLoss  
+    ##   0.4141233
+
+``` r
+ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=temp,
+             method="glm", 
+             metric="logLoss",
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+             preProcess=c("center","scale")
+)
+ed_logistic2
+```
+
+    ## Generalized Linear Model 
+    ## 
+    ## 62750 samples
+    ##     5 predictor
+    ##     2 classes: 'no', 'yes' 
+    ## 
+    ## Pre-processing: centered (5), scaled (5) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 50199, 50201, 50200, 50200, 50200 
+    ## Resampling results:
+    ## 
+    ##   logLoss 
+    ##   0.412708
 
 #### Second method: Lasso logistic
 
@@ -251,7 +557,32 @@ new method by Erich
 
 #### Sixth method:
 
-new method by Xiaomeng
+``` r
+ed_rf<-train(Diabetes_binary_f~BMI+HighChol_f,data=temp,
+             method="rf", 
+             metric="logLoss",
+             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+             preProcess=c("center","scale"),
+             tuneGrid=data.frame(mtry=2)
+)
+ed_rf
+```
+
+    ## Random Forest 
+    ## 
+    ## 62750 samples
+    ##     2 predictor
+    ##     2 classes: 'no', 'yes' 
+    ## 
+    ## Pre-processing: centered (2), scaled (2) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 50201, 50200, 50200, 50199, 50200 
+    ## Resampling results:
+    ## 
+    ##   logLoss 
+    ##   5.413209
+    ## 
+    ## Tuning parameter 'mtry' was held constant at a value of 2
 
 # Final Model Selection
 
