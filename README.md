@@ -12,6 +12,18 @@ Xiaomeng Liu
   - [Convert variables to factors](#convert-variables-to-factors)
 - [Summarizations](#summarizations)
 - [Modeling](#modeling)
+  - [Data cleaning](#data-cleaning)
+  - [train and test set](#train-and-test-set)
+  - [what log loss is:](#what-log-loss-is)
+  - [First method: logistic
+    regression](#first-method-logistic-regression)
+  - [Second method: Lasso logistic](#second-method-lasso-logistic)
+  - [Third method: Classification
+    tree](#third-method-classification-tree)
+  - [Fourth method: Random forest](#fourth-method-random-forest)
+  - [Fifth method:](#fifth-method)
+  - [Sixth method: Bayesian Generalized Linear
+    Model](#sixth-method-bayesian-generalized-linear-model)
 - [Final Model Selection](#final-model-selection)
 
 # library
@@ -147,7 +159,7 @@ ggplot(data=temp, aes(x=Education_f)) +
   labs(title = "confirm that we're working with the desired set of cases")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-1.png)<!-- -->
 
 ``` r
 #function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
@@ -176,7 +188,7 @@ explore(by_var = HighBP_f)
     ## 1 0               0.0830
     ## 2 1               0.268
 
-![](README_files/figure-gfm/unnamed-chunk-46-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-2.png)<!-- -->
 
 ``` r
 explore(by_var = HighChol_f)
@@ -188,7 +200,7 @@ explore(by_var = HighChol_f)
     ## 1 0                  0.107
     ## 2 1                  0.257
 
-![](README_files/figure-gfm/unnamed-chunk-46-3.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-3.png)<!-- -->
 
 ``` r
 explore(by_var = CholCheck_f)
@@ -200,7 +212,7 @@ explore(by_var = CholCheck_f)
     ## 1 0                  0.0374
     ## 2 1                  0.182
 
-![](README_files/figure-gfm/unnamed-chunk-46-4.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-4.png)<!-- -->
 
 ``` r
 explore(by_var = Smoker_f)
@@ -212,7 +224,7 @@ explore(by_var = Smoker_f)
     ## 1 0                0.170
     ## 2 1                0.182
 
-![](README_files/figure-gfm/unnamed-chunk-46-5.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-5.png)<!-- -->
 
 ``` r
 explore(by_var = Stroke_f)
@@ -224,7 +236,7 @@ explore(by_var = Stroke_f)
     ## 1 0                0.168
     ## 2 1                0.322
 
-![](README_files/figure-gfm/unnamed-chunk-46-6.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-6.png)<!-- -->
 
 ``` r
 explore(by_var = HeartDiseaseorAttack_f)
@@ -236,7 +248,7 @@ explore(by_var = HeartDiseaseorAttack_f)
     ## 1 0                              0.154
     ## 2 1                              0.340
 
-![](README_files/figure-gfm/unnamed-chunk-46-7.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-7.png)<!-- -->
 
 ``` r
 explore(by_var = PhysActivity_f)
@@ -248,7 +260,7 @@ explore(by_var = PhysActivity_f)
     ## 1 0                      0.223
     ## 2 1                      0.153
 
-![](README_files/figure-gfm/unnamed-chunk-46-8.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-8.png)<!-- -->
 
 ``` r
 explore(by_var = Fruits_f)
@@ -260,7 +272,7 @@ explore(by_var = Fruits_f)
     ## 1 0                0.185
     ## 2 1                0.170
 
-![](README_files/figure-gfm/unnamed-chunk-46-9.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-9.png)<!-- -->
 
 ``` r
 explore(by_var = Veggies_f)
@@ -272,7 +284,7 @@ explore(by_var = Veggies_f)
     ## 1 0                 0.200
     ## 2 1                 0.168
 
-![](README_files/figure-gfm/unnamed-chunk-46-10.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-10.png)<!-- -->
 
 ``` r
 explore(by_var = HvyAlcoholConsump_f)
@@ -284,7 +296,7 @@ explore(by_var = HvyAlcoholConsump_f)
     ## 1 0                          0.182 
     ## 2 1                          0.0743
 
-![](README_files/figure-gfm/unnamed-chunk-46-11.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-11.png)<!-- -->
 
 ``` r
 explore(by_var = AnyHealthcare_f)
@@ -296,7 +308,7 @@ explore(by_var = AnyHealthcare_f)
     ## 1 0                       0.128
     ## 2 1                       0.180
 
-![](README_files/figure-gfm/unnamed-chunk-46-12.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-12.png)<!-- -->
 
 ``` r
 explore(by_var = NoDocbcCost_f)
@@ -308,7 +320,7 @@ explore(by_var = NoDocbcCost_f)
     ## 1 0                     0.174
     ## 2 1                     0.195
 
-![](README_files/figure-gfm/unnamed-chunk-46-13.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-13.png)<!-- -->
 
 ``` r
 explore(by_var = GenHlth_f)
@@ -323,7 +335,7 @@ explore(by_var = GenHlth_f)
     ## 4 4                0.316 
     ## 5 5                0.370
 
-![](README_files/figure-gfm/unnamed-chunk-46-14.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-14.png)<!-- -->
 
 ``` r
 explore(by_var = DiffWalk_f)
@@ -335,7 +347,7 @@ explore(by_var = DiffWalk_f)
     ## 1 0                  0.135
     ## 2 1                  0.316
 
-![](README_files/figure-gfm/unnamed-chunk-46-15.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-15.png)<!-- -->
 
 ``` r
 explore(by_var = Sex_f)
@@ -347,7 +359,7 @@ explore(by_var = Sex_f)
     ## 1 0             0.174
     ## 2 1             0.180
 
-![](README_files/figure-gfm/unnamed-chunk-46-16.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-16.png)<!-- -->
 
 ``` r
 explore(by_var = Age_f)
@@ -370,7 +382,7 @@ explore(by_var = Age_f)
     ## 12 12           0.233 
     ## 13 13           0.195
 
-![](README_files/figure-gfm/unnamed-chunk-46-17.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-17.png)<!-- -->
 
 ``` r
 explore(by_var = Income_f)
@@ -388,7 +400,7 @@ explore(by_var = Income_f)
     ## 7 7               0.138 
     ## 8 8               0.0979
 
-![](README_files/figure-gfm/unnamed-chunk-46-18.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-18.png)<!-- -->
 
 ``` r
 #correlation matrix (outcome var x continuous vars)
@@ -399,7 +411,7 @@ corrplot(correlation, type = "upper", tl.pos = "lt")
 corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-19.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-19.png)<!-- -->
 
 ``` r
 #density plots / boxplots (outcome var x continuous vars)
@@ -408,39 +420,41 @@ ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) +
   geom_density(adjust = 0.5, alpha = 0.5)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-20.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-20.png)<!-- -->
 
 ``` r
 ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-21.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-21.png)<!-- -->
 
 ``` r
 ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
   geom_density(adjust = 0.5, alpha = 0.5)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-22.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-22.png)<!-- -->
 
 ``` r
 ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-23.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-23.png)<!-- -->
 
 ``` r
 ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
   geom_density(adjust = 0.5, alpha = 0.5)
 ```
 
-![](README_files/figure-gfm/unnamed-chunk-46-24.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-67-24.png)<!-- -->
 
 ``` r
 bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
 ```
 
 # Modeling
+
+## Data cleaning
 
 ``` r
 #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
@@ -465,7 +479,12 @@ temp$Age     <- NULL
 temp$Education   <- NULL
 temp$Education_f     <- NULL
 temp$Income  <- NULL
+
+temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
+temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
 ```
+
+## train and test set
 
 ``` r
 # set the seed
@@ -476,7 +495,7 @@ ed_train<-temp[indextrain,]
 ed_test<-temp[-indextrain,]
 ```
 
-#### what log loss is:
+## what log loss is:
 
 Log loss is a common evaluation metric for binary classification models.
 It measure the performance of a model by quantifying the difference
@@ -485,40 +504,48 @@ log loss penalizes confident and incorrect predictors more heavily.It
 also provides a continuous and differentiable meausre of the model’s
 performance, making it suitable of optimization algorithms.
 
-#### First method: logistic regression
+## First method: logistic regression
 
-The first group member should provide a reasonably thorough explanation
-of what a logistic regression is and why we apply it to this kind of
-data. Then they should fit three candidate logistic regression models
-and choose the best model.
+\###explanation of what a logistic regression is
+
+The logistic regression is modeling average number of successes for a
+given x, i.e. probability of success.Basic logistic regression models
+success probability using the logistic function
+$P(success|yard)=\frac{e^{\beta_0+\beta_1x}}{1+e^{\beta_0+\beta_1x}}$
+
+\###why we apply it to this kind of data We have a response variable
+that is success/failure and it is perfect for fitting a logistic
+regression mode.
+
+\###fit three candidate logistic regression models and choose the best
+model.
 
 ``` r
-temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
-ed_logistic<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=temp,
+ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
              method="glm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
-ed_logistic
+ed_logistic1
 ```
 
     ## Generalized Linear Model 
     ## 
-    ## 62750 samples
+    ## 43926 samples
     ##     3 predictor
     ##     2 classes: 'no', 'yes' 
     ## 
     ## Pre-processing: centered (3), scaled (3) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 50199, 50201, 50200, 50200, 50200 
+    ## Summary of sample sizes: 35140, 35142, 35141, 35140, 35141 
     ## Resampling results:
     ## 
-    ##   logLoss  
-    ##   0.4141233
+    ##   logLoss 
+    ##   0.413536
 
 ``` r
-ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=temp,
+ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=ed_train,
              method="glm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
@@ -529,61 +556,183 @@ ed_logistic2
 
     ## Generalized Linear Model 
     ## 
-    ## 62750 samples
+    ## 43926 samples
     ##     5 predictor
     ##     2 classes: 'no', 'yes' 
     ## 
     ## Pre-processing: centered (5), scaled (5) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 50199, 50201, 50200, 50200, 50200 
+    ## Summary of sample sizes: 35141, 35141, 35141, 35141, 35140 
     ## Resampling results:
     ## 
-    ##   logLoss 
-    ##   0.412708
-
-#### Second method: Lasso logistic
-
-Erich part
-
-#### Third method: Classification tree
-
-Erich part
-
-#### Fourth method: Random forest
-
-#### Fifth method:
-
-new method by Erich
-
-#### Sixth method:
+    ##   logLoss  
+    ##   0.4121787
 
 ``` r
-ed_rf<-train(Diabetes_binary_f~BMI+HighChol_f,data=temp,
+ed_logistic3<-train(Diabetes_binary_f~.,data=ed_train,
+             method="glm", 
+             metric="logLoss",
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+             preProcess=c("center","scale")
+)
+ed_logistic3
+```
+
+    ## Generalized Linear Model 
+    ## 
+    ## 43926 samples
+    ##    20 predictor
+    ##     2 classes: 'no', 'yes' 
+    ## 
+    ## Pre-processing: centered (40), scaled (40) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 35142, 35141, 35141, 35140, 35140 
+    ## Resampling results:
+    ## 
+    ##   logLoss  
+    ##   0.3844808
+
+``` r
+# return the result
+paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))])
+```
+
+    ## [1] "According to the results, the lowest logLoss is the model 3"
+
+## Second method: Lasso logistic
+
+Erich part
+
+## Third method: Classification tree
+
+Erich part
+
+## Fourth method: Random forest
+
+\###Explanation of the random forest: The random forest uses the same
+idea as bagging. It creates multiple trees from bootstrap samples and
+averages results. It uses a random subset of predictors for each
+bootstrap sample fit.
+
+\###why we might use it instead of a basic classification tree: We want
+to use random forest because we do not want to use all the predictors.If
+a really strong predictor exists, every bootstrap tree will probably use
+it for the first split and it will make the prediction more correlated.
+
+``` r
+ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
+             data=ed_train,
              method="rf", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
              preProcess=c("center","scale"),
-             tuneGrid=data.frame(mtry=2)
+             tuneGrid=data.frame(mtry=c(5:7))
 )
 ed_rf
 ```
 
     ## Random Forest 
     ## 
-    ## 62750 samples
-    ##     2 predictor
+    ## 43926 samples
+    ##    20 predictor
     ##     2 classes: 'no', 'yes' 
     ## 
-    ## Pre-processing: centered (2), scaled (2) 
+    ## Pre-processing: centered (40), scaled (40) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 50201, 50200, 50200, 50199, 50200 
+    ## Summary of sample sizes: 35142, 35141, 35140, 35140, 35141 
+    ## Resampling results across tuning parameters:
+    ## 
+    ##   mtry  logLoss  
+    ##   5     0.4234489
+    ##   6     0.4239566
+    ##   7     0.4196037
+    ## 
+    ## logLoss was used to select the optimal model using the smallest value.
+    ## The final value used for the model was mtry = 7.
+
+## Fifth method:
+
+new method by Erich
+
+## Sixth method: Bayesian Generalized Linear Model
+
+``` r
+ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
+             method="bayesglm", 
+             metric="logLoss",
+             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+             preProcess=c("center","scale")
+)
+ed_bglm
+```
+
+    ## Bayesian Generalized Linear Model 
+    ## 
+    ## 43926 samples
+    ##    20 predictor
+    ##     2 classes: 'no', 'yes' 
+    ## 
+    ## Pre-processing: centered (40), scaled (40) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 35142, 35141, 35140, 35141, 35140 
     ## Resampling results:
     ## 
-    ##   logLoss 
-    ##   5.413209
-    ## 
-    ## Tuning parameter 'mtry' was held constant at a value of 2
+    ##   logLoss  
+    ##   0.3843105
 
 # Final Model Selection
 
 You should now have six best models (one for each model type above)
+
+``` r
+# Method 1
+a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
+if (a==1){
+  CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic1,newdata = ed_test))
+}
+ifelse(a==2,
+  CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic2,newdata = ed_test)),
+  CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic3,newdata = ed_test))
+  )
+```
+
+    ## [[1]]
+    ## [1] "no"
+
+``` r
+(CM1<-CM1$overall[1])
+```
+
+    ##  Accuracy 
+    ## 0.8283043
+
+``` r
+# Method 2
+#confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+# Method 3
+#confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+# Method 4
+CM4<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+(CM<-CM4$overall[1])
+```
+
+    ##  Accuracy 
+    ## 0.8263387
+
+``` r
+# Method 5
+#confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+# Method 6
+CM6<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_bglm,newdata = ed_test))
+(CM6<-CM6$overall[1])
+```
+
+    ##  Accuracy 
+    ## 0.8282512
+
+``` r
+CM<-c(CM1,CM6)
+paste0(c("Model 1","Model 6")[which.max(CM)]," is the best model")
+```
+
+    ## [1] "Model 1 is the best model"

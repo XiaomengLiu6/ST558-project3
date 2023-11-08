@@ -194,6 +194,7 @@ bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
 
 # Modeling
 
+## Data cleaning
 ```{r}
 #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
 #we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
@@ -217,8 +218,12 @@ temp$Age	 <- NULL
 temp$Education	 <- NULL
 temp$Education_f	 <- NULL
 temp$Income	 <- NULL
+
+temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
+temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
 ```
 
+## train and test set
 ```{r}
 # set the seed
 set.seed(433)
@@ -228,7 +233,7 @@ ed_train<-temp[indextrain,]
 ed_test<-temp[-indextrain,]
 ```
 
-#### what log loss is:
+## what log loss is:
 
 Log loss is a common evaluation metric for binary classification models. It 
 measure the performance of a model by quantifying the difference between 
@@ -237,24 +242,31 @@ penalizes confident and incorrect predictors more heavily.It also provides a
 continuous and differentiable meausre of the model's performance, making it 
 suitable of optimization algorithms. 
 
-#### First method: logistic regression
+## First method: logistic regression
 
-The first group member should provide a reasonably thorough explanation of what a
-logistic regression is and why we apply it to this kind of data. Then they should fit
-three candidate logistic regression models and choose the best model.
+###explanation of what a logistic regression is
+
+The logistic regression is modeling average number of successes for a given x, 
+i.e. probability of success.Basic logistic regression models success probability
+using the logistic function $P(success|yard)=\frac{e^{\beta_0+\beta_1x}}{1+e^{\beta_0+\beta_1x}}$
+
+###why we apply it to this kind of data
+We have a response variable that is success/failure and it is perfect for fitting
+a logistic regression mode. 
+
+###fit three candidate logistic regression models and choose the best model.
 
 ```{r logistic}
-temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
-ed_logistic<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=temp,
+ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
              method="glm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
-ed_logistic
+ed_logistic1
 ```
 ```{r}
-ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=temp,
+ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=ed_train,
              method="glm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
@@ -262,41 +274,58 @@ ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActiv
 )
 ed_logistic2
 ```
+```{r}
+ed_logistic3<-train(Diabetes_binary_f~.,data=ed_train,
+             method="glm", 
+             metric="logLoss",
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+             preProcess=c("center","scale")
+)
+ed_logistic3
+```
+```{r}
+# return the result
+paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))])
+```
 
-
-#### Second method: Lasso logistic
+## Second method: Lasso logistic
 
 Erich part
 
-#### Third method: Classification tree
+## Third method: Classification tree
 
 Erich part
 
-#### Fourth method: Random forest
+## Fourth method: Random forest
 
-The random forest uses the same idea as bagging. It creates multiple trees from bootstrap samples and averages results. It uses a random subset of predictors for each bootstrap sample fit. We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
+###Explanation of the random forest:
+The random forest uses the same idea as bagging. It creates multiple trees from bootstrap samples and averages results. It uses a random subset of predictors for each bootstrap sample fit. 
+
+###why we might use it instead of a basic classification tree:
+We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
+
 ```{r,cache=FALSE}
-ed_rf<-train(Diabetes_binary_f~BMI+HighBP_f+HighChol_f,data=temp,
+ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
+             data=ed_train,
              method="rf", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
              preProcess=c("center","scale"),
-             tuneGrid=data.frame(mtry=2)
+             tuneGrid=data.frame(mtry=c(5:7))
 )
 ed_rf
 ```
-#### Fifth method: 
+## Fifth method: 
 
 new method by Erich
 
-#### Sixth method: Bayesian Generalized Linear Model
+## Sixth method: Bayesian Generalized Linear Model
 ```{r,cache=FALSE}
-ed_bglm<-train(Diabetes_binary_f~.,data=temp,
+ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
              method="bayesglm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
-             preProcess=c("center","scale")#,
-             #tuneGrid=data.frame(K.prov=7)
+             preProcess=c("center","scale")
 )
 ed_bglm
 ```
@@ -304,4 +333,31 @@ ed_bglm
 # Final Model Selection
 
 You should now have six best models (one for each model type above)
+```{r}
+# Method 1
+a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
+if (a==1){
+  CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic1,newdata = ed_test))
+}
+ifelse(a==2,
+  CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic2,newdata = ed_test)),
+  CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic3,newdata = ed_test))
+  )
+(CM1<-CM1$overall[1])
+# Method 2
+#confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+# Method 3
+#confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+# Method 4
+CM4<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+(CM<-CM4$overall[1])
+# Method 5
+#confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
+# Method 6
+CM6<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_bglm,newdata = ed_test))
+(CM6<-CM6$overall[1])
+
+CM<-c(CM1,CM6)
+paste0(c("Model 1","Model 6")[which.max(CM)]," is the best model")
+```
 
