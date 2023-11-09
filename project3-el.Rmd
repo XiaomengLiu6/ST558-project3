@@ -296,7 +296,7 @@ ed_logistic
 ```
 #### Second method: Lasso logistic
 Lasso models aim to leverage the bias-variance trade-off by purposefully introducing small amounts of bias while training the model, with the hope of ultimately decreasing variance (and thereby improving performance when using the model on test data).
-PROBABLY NEED TO SAY MORE HERE
+PROBABLY NEED TO SAY MORE HERE (this might help: https://www.statology.org/lasso-regression/)
 
 ```{r}
 lasso_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
