@@ -22,6 +22,7 @@ library(dplyr)
 library(ggplot2)
 library(corrplot)
 library(caret)
+library(gam)
 ```
 
 # Introduction section
@@ -272,6 +273,11 @@ ed_test<-temp[-indextrain,]
 The first group member should research and write up a paragraph about what log
 loss is and why we may prefer it to things like accuracy.
 
+>
+Xiaomeng, I'm sure there is more that can/should be said here, but as best as I can tell, the main gist behind the logLoss metric is to compare actual outcome classification values to predicted probabilities (as opposed to comparing actual outcome classification values to predicted classification values).  Here is a website that seemed to make some sense (to me, at least) when describing the logLoss metric: 
+https://towardsdatascience.com/intuition-behind-log-loss-score-4e0c9979680a
+
+
 #### First method: logistic regression
 
 The first group member should provide a reasonably thorough explanation of what a
@@ -289,6 +295,8 @@ ed_logistic<-train(Diabetes_binary_f~.,data=ed_train,
 ed_logistic
 ```
 #### Second method: Lasso logistic
+Lasso models aim to leverage the bias-variance trade-off by purposefully introducing small amounts of bias while training the model, with the hope of ultimately decreasing variance (and thereby improving performance when using the model on test data).
+PROBABLY NEED TO SAY MORE HERE
 
 ```{r}
 lasso_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
@@ -305,7 +313,8 @@ lasso_fit
 
 #### Third method: Classification tree
 
-Next we predict heart disease using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Here we train our model 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
+Next we predict the presence of diabetes using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Here we train our model using 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
+PROBABLY NEED TO SAY MORE HERE
 
 ```{r}
 #classification tree
@@ -327,6 +336,19 @@ ct_fit
 #### Fifth method: 
 
 new method by Erich
+```{r}
+loess_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
+  method = "gamLoess",
+  metric="logLoss",
+  preProcess = c("center", "scale"),
+  trControl = trainControl(method = "cv", number = 5, 
+                           classProbs = TRUE, summaryFunction = mnLogLoss),
+  tuneGrid = expand.grid(span = seq(0.5, 0.9, len = 5), degree = 1))
+#tuning parameters as currently shown are borrowed from https://www.statology.org/loess-regression-in-r/
+
+loess_fit
+
+```
 
 #### Sixth method:
 
