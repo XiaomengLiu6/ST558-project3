@@ -275,7 +275,7 @@ logistic regression is and why we apply it to this kind of data. Then they shoul
 three candidate logistic regression models and choose the best model.
 
 ```{r logistic}
-ed_logistic<-train(Diabetes_binary_f~.,data=temp,
+ed_logistic<-train(Diabetes_binary_f~.,data=ed_train,
              method="glm", 
              metric="logLoss",
              trControl=trainControl(method = "cv",number = 5),
@@ -289,22 +289,23 @@ Erich part
 
 #### Third method: Classification tree
 
-Erich part
+Next we predict heart disease using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Here we train our model 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
+
+```{r}
+#classification tree
+ct_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
+  method = "rpart",
+  metric="logLoss",
+  preProcess = c("center", "scale"),
+  trControl = trainControl(method = "cv", number = 5),
+  tuneGrid = data.frame(cp = seq(from = .001, to = .1, by = .001)))
+
+ct_fit
+```
+
 
 #### Fourth method: Random forest
-```{r}
-rf_fit <- train(Diabetes_binary_f ~ ., data = temp,
-  method = "rf",
-  metric = "logLoss",
-  preProcess = c("center", "scale"),
-  trControl = trainControl(method = "cv", number = 5, classProbs=TRUE,
-                            summaryFunction = mnLogLoss),
-  tuneGrid = data.frame(mtry = 1:20))
 
-rf_fit
-
-#confusionMatrix(data = ed_test$Diabetes_binary_f, reference = predict(rf_fit, newdata = ed_test))
-```
 
 #### Fifth method: 
 
