@@ -254,6 +254,10 @@ temp$Education	 <- NULL
 temp$Education_f	 <- NULL
 temp$Income	 <- NULL
 
+temp$Diabetes_binary_f <- ifelse(temp$Diabetes_binary_f==0, "no", "yes")
+temp$Diabetes_binary_f <- as.factor(temp$Diabetes_binary_f)
+
+
 
 # set the seed
 set.seed(433)
@@ -278,14 +282,26 @@ three candidate logistic regression models and choose the best model.
 ed_logistic<-train(Diabetes_binary_f~.,data=ed_train,
              method="glm", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5),
+             trControl = trainControl(method = "cv", number = 5, 
+                           classProbs = TRUE, summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
 ed_logistic
 ```
 #### Second method: Lasso logistic
 
-Erich part
+```{r}
+lasso_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
+  method = "glmnet",
+  metric="logLoss",
+  preProcess = c("center", "scale"),
+  trControl = trainControl(method = "cv", number = 5, 
+                           classProbs = TRUE, summaryFunction = mnLogLoss),
+  tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)))
+
+lasso_fit
+```
+
 
 #### Third method: Classification tree
 
@@ -297,7 +313,8 @@ ct_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
   method = "rpart",
   metric="logLoss",
   preProcess = c("center", "scale"),
-  trControl = trainControl(method = "cv", number = 5),
+  trControl = trainControl(method = "cv", number = 5, 
+                           classProbs = TRUE, summaryFunction = mnLogLoss),
   tuneGrid = data.frame(cp = seq(from = .001, to = .1, by = .001)))
 
 ct_fit
