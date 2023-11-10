@@ -23,6 +23,7 @@ library(ggplot2)
 library(corrplot)
 library(caret)
 library(gam)
+library(ModelMetrics)
 ```
 
 # Introduction section
@@ -358,3 +359,15 @@ new method by Xiaomeng
 
 You should now have six best models (one for each model type above)
 
+```{r}
+choose <- function(in_model)
+{
+pred <- as.data.frame(predict(in_model, ed_test))
+logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred$fitted.values)
+}
+
+choose(in_model = ed_logistic)
+choose(in_model = lasso_fit)
+choose(in_model = ct_fit)
+choose(in_model = loess_fit)
+```
