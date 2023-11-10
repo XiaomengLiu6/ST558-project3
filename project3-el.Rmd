@@ -363,6 +363,7 @@ You should now have six best models (one for each model type above)
 choose <- function(in_model)
 {
 pred <- as.data.frame(predict(in_model, ed_test))
+#as.data.frame is used here to avoid error as illustrated here: https://www.statology.org/r-error-operator-is-invalid-for-atomic-vectors/
 logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred$fitted.values)
 }
 
