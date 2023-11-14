@@ -240,12 +240,16 @@ ed_test<-temp[-indextrain,]
 
 ## what log loss is:
 
-Log loss is a common evaluation metric for binary classification models. It 
-measure the performance of a model by quantifying the difference between 
-predicted probabilities and actual values. We prefer it because log loss 
-penalizes confident and incorrect predictors more heavily.It also provides a 
-continuous and differentiable meausre of the model's performance, making it 
-suitable of optimization algorithms. 
+Log loss is a common evaluation metric for binary classification models. It measure the performance of a model by quantifying the difference between predicted probabilities and actual values. The more the predicted probability diverges from the actual value, the higher is the log-loss value.A lower log loss value means better predictions.Mathematically, log loss is the negative average of the log of correct predicted probabilities for each instance. 
+
+We prefer it because log loss penalizes confident and incorrect predictors more heavily. It also provides a continuous and differentiable meausre of the model's performance, making it suitable of optimization algorithms. It could be interpreted as the logarithmic measure of the likelihood of the predicted probabilities aligning with the true labels.
+
+### related links
+Here are two website links I found useful for explaining this term:
+
+https://www.analyticsvidhya.com/blog/2020/11/binary-cross-entropy-aka-log-loss-the-cost-function-used-in-logistic-regression/
+
+https://towardsdatascience.com/intuition-behind-log-loss-score-4e0c9979680a
 
 ## First method: logistic regression
 
