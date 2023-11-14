@@ -16,6 +16,7 @@ library(ggplot2)
 library(corrplot)
 library(caret)
 library(ModelMetrics)
+library(rotationForest)
 
 #• the code used to create the analyses from a single .Rmd file (i.e. the render() code)
 

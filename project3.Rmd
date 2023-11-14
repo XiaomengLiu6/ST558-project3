@@ -14,6 +14,11 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+```{r}
+paste0("This is the automated generated md file for the education level ",params$ed_level)
+```
+
 # Goal
 
 We analyzed a Diabetes Health Indicator Dataset. We were doing a separate analysis (basic EDA and the fitting/selection of predictive models) for each of these five Education groups using a single .Rmd file. In the file, we had a parameter corresponding to which Education level we were looking at and we subset the data to only use those observations for
@@ -29,11 +34,16 @@ library(ggplot2)
 library(corrplot)
 library(caret)
 library(ModelMetrics)
+library(rotationForest)
 ```
 
 # Introduction section
 
 This is the section that we briefly describes the data and the variables you have to work with (just discuss the ones we use in our analysis), and describes the purpose of our EDA and modeling, along with the end result we would be creating.
+
+The analyses presented here are based on the Diabetes Health Indicators Dataset, made available by kaggle.com at https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/.  The specific dataset upon which this analysis is based (diabetes_binary_health_indicators_BRFSS2015.csv) is comprised of approximately 250,000 records, each having a dichotomous 0/1 indication of no diabetes vs. diabetes/pre-diabetes.  In addition, the datafile contains roughly 20 feature variables of various types, including continuous (e.g. body mass index), categorical (e.g. education level), and dummy indicators (e.g. whether the patient has high blood pressure).
+
+The analytic approach taken here is to control for patients' level of education by conducting a separate analysis (i.e. exploratory data analysis + predictive modelling) for each of five education levels:  (1) 8th grade or lower; (2) grade 9 through 11; (3) high school credential; (4) some college or technical school; and (5) bachelors degree or higher.  The outcome measure of interest for all analyses will be the dichotomous diabetes indicator.
 
 ```{r}
   #per https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf,
@@ -87,7 +97,7 @@ This is the section that we briefly describes the data and the variables you hav
 
 # Data
 
-Use a relative path to import the data. Subset the data to work on the Education level of interest. We convert a lot of the variables to factors with meaningful level names.
+Before conducting analyses, we will read in the csv datafile, collapse education levels of "Never attended school or only kindergarten" and "Grades 1 through 8" into a single category, and convert categorical variables into R factors.
 
 ### Read in the data
 ```{r}
@@ -128,8 +138,10 @@ diabetes$Sex_f	 <- as.factor(diabetes$Sex)
 diabetes$Age_f	 <- as.factor(diabetes$Age)
 diabetes$Education_f	 <- as.factor(diabetes$Education)
 diabetes$Income_f	 <- as.factor(diabetes$Income)
+```
 
-
+## subset to specific level of education per *params* setting
+```{r}
 #subset to specific level of education per *params* setting
 temp <- subset(diabetes, Education==params$ed_level)
 ```
@@ -272,17 +284,17 @@ https://towardsdatascience.com/intuition-behind-log-loss-score-4e0c9979680a
 
 ## First method: logistic regression
 
-###explanation of what a logistic regression is
+### explanation of what a logistic regression is
 
 The logistic regression is modeling average number of successes for a given x, 
 i.e. probability of success.Basic logistic regression models success probability
 using the logistic function $P(success|yard)=\frac{e^{\beta_0+\beta_1x}}{1+e^{\beta_0+\beta_1x}}$
 
-###why we apply it to this kind of data
+### why we apply it to this kind of data
 We have a response variable that is success/failure and it is perfect for fitting
 a logistic regression mode. 
 
-###fit three candidate logistic regression models and choose the best model.
+### fit three candidate logistic regression models and choose the best model.
 
 ```{r logistic}
 ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
@@ -351,10 +363,10 @@ ed_ct
 
 ## Fourth method: Random forest
 
-###Explanation of the random forest:
+### Explanation of the random forest:
 The random forest uses the same idea as bagging. It creates multiple trees from bootstrap samples and averages results. It uses a random subset of predictors for each bootstrap sample fit. 
 
-###why we might use it instead of a basic classification tree:
+### why we might use it instead of a basic classification tree:
 We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
 
 ```{r,cache=FALSE,eval=FALSE}
