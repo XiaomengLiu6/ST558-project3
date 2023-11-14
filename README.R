@@ -1,6 +1,5 @@
-# render the "project3.RMD" file as a .md file called README.md.
+# This is a brief description of the purpose of the repo
 
-#a brief description of the purpose of the repo
 #The repo is about ST558 Project 3. We analyzed a Diabetes Health Indicator 
 #Dataset. We were doing a separate analysis (basic EDA and the fitting/selection 
 #of predictive models) for each of these five Education groups using a single 
@@ -9,7 +8,8 @@
 #for that analysis. We created render() code similar to the lecture to make the 
 #process of creating the five separate analysis simple to do.
 
-#• a list of R packages used
+Here is a list of R packages used
+
 library(readr)
 library(dplyr)
 library(ggplot2)
