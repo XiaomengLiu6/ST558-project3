@@ -14,6 +14,10 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+# Goal
+
+We analyzed a Diabetes Health Indicator Dataset. We were doing a separate analysis (basic EDA and the fitting/selection of predictive models) for each of these five Education groups using a single .Rmd file. In the file, we had a parameter corresponding to which Education level we were looking at and we subset the data to only use those observations for
+that analysis. We created render() code similar to the lecture to make the process of creating the five separate analysis simple to do.
 
 # library
 
@@ -28,6 +32,9 @@ library(ModelMetrics)
 ```
 
 # Introduction section
+
+This is the section that we briefly describes the data and the variables you have to work with (just discuss the ones we use in our analysis), and describes the purpose of our EDA and modeling, along with the end result we would be creating.
+
 ```{r}
   #per https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf,
   #here are value meanings for the education variable:
@@ -80,6 +87,8 @@ library(ModelMetrics)
 
 # Data
 
+Use a relative path to import the data. Subset the data to work on the Education level of interest. We convert a lot of the variables to factors with meaningful level names.
+
 ### Read in the data
 ```{r}
 #read in csv file
@@ -126,6 +135,10 @@ temp <- subset(diabetes, Education==params$ed_level)
 ```
 
 # Summarizations
+
+We produce some basic (but meaningful) summary statistics and plots about the data we are working
+with (especially as it relates to our response). We did our EDA on the full (subsetted to a single Education
+level) data.
 
 ```{r}
 #confirm that we're working with the desired set of cases
@@ -199,6 +212,8 @@ bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
 
 # Modeling
 
+We did some data cleaning and split the data into a training (70% of the data) and test set (30% of the data). Use set.seed() to make things reproducible. Then we will fit different models using different approach and provide explanations.
+
 ## Data cleaning
 ```{r}
 #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
@@ -228,7 +243,7 @@ temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
 temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
 ```
 
-## train and test set
+## train and test set split
 ```{r}
 # set the seed
 set.seed(433)
@@ -237,6 +252,10 @@ indextrain<-createDataPartition(y=temp$Diabetes_binary,p=0.7,list=FALSE)
 ed_train<-temp[indextrain,]
 ed_test<-temp[-indextrain,]
 ```
+
+The goal is to create models for predicting the Diabetes_binary variable (using caret). We’ll use logLoss
+as our metric to evaluate models. For all model types use logLoss with 5 fold cross-validation to select the
+best model.
 
 ## what log loss is:
 
@@ -382,7 +401,9 @@ ed_bglm
 
 # Final Model Selection
 
-You should now have six best models (one for each model type above)
+We have six best models (one for each model type above). Now compare all six models on the test
+set and declare an overall winner!
+
 ```{r,eval=FALSE}
 # Method 1
 a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
@@ -425,3 +446,4 @@ logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
 ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
 choose(in_model = ed_logistic1)
 ```
+End report!
