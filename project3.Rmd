@@ -152,14 +152,34 @@ We produce some basic (but meaningful) summary statistics and plots about the da
 with (especially as it relates to our response). We did our EDA on the full (subsetted to a single Education
 level) data.
 
+Prior to modelling our data, we will first conduct an exploratory data analysis (EDA).  Our EDA will begin by confirming that we are working with the desired set of cases, i.e. the set of cases corresponding to a single level of the categorical "education" measure.  
+
 ```{r}
 #confirm that we're working with the desired set of cases
 table(temp$Education, temp$Education_f)
 ggplot(data=temp, aes(x=Education_f)) + 
   geom_dotplot(binwidth = .05, method = "histodot") + 
   labs(title = "confirm that we're working with the desired set of cases")
+```
 
+```{r}
+# a simple EDA
+str(temp)
+#MentHlth -- this is a continuous var
+#PhysHlth -- this is a continuous var
+#BMI -- this is a continuous var
 
+nume<-cbind(temp$BMI,temp$MentHlth, temp$PhysHlth)
+as.table(cbind(min(temp$BMI),sd(temp$BMI)))
+table(temp$CholCheck_f)
+temp%>%summarize(mean=mean(varb),median=median(varb),std=sd(varb))
+```
+
+After confirming correct data subsetting, for each factor variable in the dataset, we have calculated the prevalence of diabetes at each level of said factor in hopes of identifying any bi-variate associations with diabetes.  In addition, for each factor variable, we graphically display (1) the relative frequency of patients within factor levels, and (2) the proportion of patients within each level of each factor that do and do not have diabetes.
+
+For continuous predictor variables, we have generated a correlation matrix (the outcome of interest is also included in this correlation matrix).  We also generate density plots and boxplots for each continuous predictor using the dichotomous outcome measure as a "by" variable for each of these plots.
+
+```{r}
 #function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
 #(I still need to flesh out this function such that it labels the plots)
 explore <- function(by_var)
@@ -172,8 +192,10 @@ results1 <- temp %>%
 print(results1)
 
 results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
-  geom_bar(stat="count")
+  geom_bar(stat="count") +
+  labs(title = "Presence of diabetes, by select factors")
 print(results2)
+#Xiaomeng, I cant figure out how to pass a variable name into the title of each figure (and thus the generic title wording currently used here)
 }
 
 #probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
@@ -209,17 +231,25 @@ corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALS
 #density plots / boxplots (outcome var x continuous vars)
 #I'm guessing we could just choose one or the other
 ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
+  geom_density(adjust = 0.5, alpha = 0.5) +
+  labs(title = "BMI, by diabetes status")
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot() +
+  labs(title = "BMI, by diabetes status")
 
 ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
+  geom_density(adjust = 0.5, alpha = 0.5) +
+  labs(title = "Number of poor mental health days, by diabetes status")
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot() +
+  labs(title = "Number of poor mental health days, by diabetes status")
 
 ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
+  geom_density(adjust = 0.5, alpha = 0.5) +
+  labs(title = "Number of poor physical health days, by diabetes status")
+bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + 
+  geom_boxplot() + 
+  labs(title = "Number of poor physical health days, by diabetes status")
 ```
+
 
 
 # Modeling
@@ -227,6 +257,9 @@ bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
 We did some data cleaning and split the data into a training (70% of the data) and test set (30% of the data). Use set.seed() to make things reproducible. Then we will fit different models using different approach and provide explanations.
 
 ## Data cleaning
+
+We made a data cleaning so that the model fitting methods would work better.
+
 ```{r}
 #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
 #we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
@@ -251,6 +284,7 @@ temp$Education	 <- NULL
 temp$Education_f	 <- NULL
 temp$Income	 <- NULL
 
+# convert the 0 and 1 to no and yes for logLoss metric to work.
 temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
 temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
 ```
@@ -296,7 +330,7 @@ a logistic regression mode.
 
 ### fit three candidate logistic regression models and choose the best model.
 
-```{r logistic}
+```{r}
 ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
              method="glm", 
              metric="logLoss",
@@ -369,7 +403,7 @@ The random forest uses the same idea as bagging. It creates multiple trees from 
 ### why we might use it instead of a basic classification tree:
 We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
 
-```{r,cache=FALSE,eval=FALSE}
+```{r,eval=FALSE}
 ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
              data=ed_train,
              method="rf", 
@@ -400,7 +434,7 @@ ed_rot
 
 The generalized linear model (GLM) is an approach incorporating various probability distributions into a fitting procedure to describe variability. A GLM with Bayesian inference is often used to avoid over fitting. A Bayesian GLM can flexibly integrate various probability distributions as model residuals and parameter uncertainty.
 
-```{r,cache=FALSE}
+```{r}
 ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
              method="bayesglm", 
              metric="logLoss",
