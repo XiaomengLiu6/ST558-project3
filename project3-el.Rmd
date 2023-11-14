@@ -28,6 +28,9 @@ library(rotationForest)
 ```
 
 # Introduction section
+The analyses presented here are based on the Diabetes Health Indicators Dataset, made available by kaggle.com at https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/.  The specific dataset upon which this analysis is based (diabetes_binary_health_indicators_BRFSS2015.csv) is comprised of approximately 250,000 records, each having a dichotomous 0/1 indication of no diabetes vs. diabetes/pre-diabetes.  In addition, the datafile contains roughly 20 feature variables of various types, including continuous (e.g. body mass index), categorical (e.g. education level), and dummy indicators (e.g. whether the patient has high blood pressure).
+
+The analytic approach taken here is to control for patients' level of education by conducting a separate analysis (i.e. exploratory data analysis + predictive modelling) for each of five education levels:  (1) 8th grade or lower; (2) grade 9 through 11; (3) high school credential; (4) some college or technical school; and (5) bachelors degree or higher.  The outcome measure of interest for all analyses will be the dichotomous diabetes indicator.
 ```{r}
   #per https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf,
   #here are value meanings for the education variable:
@@ -79,6 +82,7 @@ library(rotationForest)
 ```
 
 # Data
+Before conducting analyses, we will read in the csv datafile, collapse education levels of "Never attended school or only kindergarten" and "Grades 1 through 8" into a single category, and convert categorical variables into R factors.
 
 ### Read in the data
 ```{r}
@@ -161,6 +165,12 @@ temp <- subset(diabetes, Education==params$ed_level)
 ```
 
 # Summarizations
+Prior to modelling our data, we will first conduct an exploratory data analysis (EDA).  Our EDA will begin by confirming that we are working with the desired set of cases, i.e. the set of cases corresponding to a single level of the categorical "education" measure.  
+
+After confirming correct data subsetting, for each factor variable in the dataset, we have calculated the prevalence of diabetes at each level of said factor in hopes of identifying any bi-variate associations with diabetes.  In addition, for each factor variable, we graphically display (1) the relative frequency of patients within factor levels, and (2) the proportion of patients within each level of each factor that do and do not have diabetes.
+
+For continuous predictor variables, we have generated a correlation matrix (the outcome of interest is also included in this correlation matrix).  We also generate density plots and boxplots for each continuous predictor using the dichotomous outcome measure as a "by" variable for each of these plots.
+
 
 ```{r}
 #confirm that we're working with the desired set of cases
@@ -182,8 +192,10 @@ results1 <- temp %>%
 print(results1)
 
 results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
-  geom_bar(stat="count")
+  geom_bar(stat="count") +
+  labs(title = "Presence of diabetes, by select factors")
 print(results2)
+#Xiaomeng, I cant figure out how to pass a variable name into the title of each figure (and thus the generic title wording currently used here)
 }
 
 #probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
@@ -219,16 +231,23 @@ corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALS
 #density plots / boxplots (outcome var x continuous vars)
 #I'm guessing we could just choose one or the other
 ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
+  geom_density(adjust = 0.5, alpha = 0.5) +
+  labs(title = "BMI, by diabetes status")
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot() +
+  labs(title = "BMI, by diabetes status")
 
 ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
+  geom_density(adjust = 0.5, alpha = 0.5) +
+  labs(title = "Number of poor mental health days, by diabetes status")
+ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot() +
+  labs(title = "Number of poor mental health days, by diabetes status")
 
 ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
+  geom_density(adjust = 0.5, alpha = 0.5) +
+  labs(title = "Number of poor physical health days, by diabetes status")
+bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + 
+  geom_boxplot() + 
+  labs(title = "Number of poor physical health days, by diabetes status")
 ```
 
 # Modeling
