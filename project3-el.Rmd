@@ -3,7 +3,7 @@ title: "project3"
 author: "Xiaomeng Liu"
 date: "2023-11-05"
 output:
-  html_document:
+  github_document:
     toc: true
     toc_depth: 3
     number_sections: false
@@ -22,8 +22,8 @@ library(dplyr)
 library(ggplot2)
 library(corrplot)
 library(caret)
-library(gam)
-library(ModelMetrics)
+#library(gam)
+#library(ModelMetrics)
 library(rotationForest)
 ```
 
@@ -297,9 +297,7 @@ ed_logistic<-train(Diabetes_binary_f~.,data=ed_train,
 ed_logistic
 ```
 #### Second method: Lasso logistic
-Lasso models aim to leverage the bias-variance trade-off by purposefully introducing small amounts of bias while training the model, with the hope of ultimately decreasing variance (and thereby improving performance when using the model on test data).
-PROBABLY NEED TO SAY MORE HERE (this might help: https://www.statology.org/lasso-regression/)
-
+Lasso models aim to leverage the bias-variance trade-off by purposefully introducing small amounts of bias while training the model, with the hope of ultimately decreasing variance (and thereby improving performance when using the model on test data).  Instead of minimizing the residual sum of squares, the lasso method attempts to minimize the residual sum of squares *plus a so-called "shrinkage penalty"*.  In effect, the shrinkage penalty constrains regression coefficients, and in so doing, allows the model to better generalize to test data.  Here we use cross-validation to test different values for the shrinkage penalty in hopes of determining its optimal value, i.e. the shinkage penalty value which eliminates the greatest amount of variance in exchange for introduction of the smallest amount of bias.
 ```{r}
 lasso_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
   method = "glmnet",
@@ -315,9 +313,7 @@ lasso_fit
 
 #### Third method: Classification tree
 
-Next we predict the presence of diabetes using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Here we train our model using 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
-PROBABLY NEED TO SAY MORE HERE
-
+Next we predict the presence of diabetes using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Classification trees are advantageous in that they are relatively easy to understand, and that they automatically account for interaction effects.  Here we train our model using 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
 ```{r}
 #classification tree
 ct_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
@@ -335,9 +331,9 @@ ct_fit
 #### Fourth method: Random forest
 
 
-#### Fifth method: 
+#### Fifth method: Rotation forest 
+The rotation forest method is similar to the random forest method in that multiple models are brought to bear -- each having different numbers and combinations of predictors -- and the resulting set of predicted values are then averaged across models (or, in the case of a categorical outcome, the most prevalent classification across models is determined).  Unlike the random forest method, however, the rotation forest method first extracts principal components from the various sets of predictor variables that are considered, and enters the principal components as predictors (as opposed to directly entering the original predictor variables as is done when using random forest).  In more general terms, the rotation forest method is essentially a twist on the random forest method whereby principal component regression (or, principal component classification) is employed.  As such, the rotation forest method is particularly well-suited for dealing with any multi-collinearity that may exist among the predictors.  When training our model, we will use the default number of variable subsets (i.e. the number of subsets that results in 3 features per subset), and the default number of base classifiers (i.e. 10).  
 
-new method by Erich
 ```{r}
 #loess_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
 #  method = "gamLoess",
