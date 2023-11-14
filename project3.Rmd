@@ -318,8 +318,7 @@ paste0("According to the results, the lowest logLoss is the model ", c("1","2","
 
 ## Second method: Lasso logistic
 
-Lasso models aim to leverage the bias-variance trade-off by purposefully introducing small amounts of bias while training the model, with the hope of ultimately decreasing variance (and thereby improving performance when using the model on test data).
-PROBABLY NEED TO SAY MORE HERE (this might help: https://www.statology.org/lasso-regression/)
+Lasso models aim to leverage the bias-variance trade-off by purposefully introducing small amounts of bias while training the model, with the hope of ultimately decreasing variance (and thereby improving performance when using the model on test data). Instead of minimizing the residual sum of squares, the lasso method attempts to minimize the residual sum of squares *plus a so-called "shrinkage penalty"*.  In effect, the shrinkage penalty constrains regression coefficients, and in so doing, allows the model to better generalize to test data.  Here we use cross-validation to test different values for the shrinkage penalty in hopes of determining its optimal value, i.e. the shinkage penalty value which eliminates the greatest amount of variance in exchange for introduction of the smallest amount of bias.
 
 ```{r}
 ed_lasso <- train(Diabetes_binary_f ~ ., data = ed_train,
@@ -335,8 +334,7 @@ ed_lasso
 
 ## Third method: Classification tree
 
-Next we predict the presence of diabetes using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Here we train our model using 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
-PROBABLY NEED TO SAY MORE HERE
+Next we predict the presence of diabetes using a classification tree, in which the predictor space is divided into various "regions", and the predicted value for any given observation is the most common classification among all other observations in that region. Classification trees are advantageous in that they are relatively easy to understand, and that they automatically account for interaction effects.  Here we train our model using 5-fold cross-validation as well as different tuning parameters to find the optimal number and types of tree splits.
 
 ```{r}
 #classification tree
@@ -370,25 +368,26 @@ ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
 )
 ed_rf
 ```
-## Fifth method: loess method
+## Fifth method: rotation forest method
 
-new method by Erich
+The rotation forest method is similar to the random forest method in that multiple models are brought to bear -- each having different numbers and combinations of predictors -- and the resulting set of predicted values are then averaged across models (or, in the case of a categorical outcome, the most prevalent classification across models is determined).  Unlike the random forest method, however, the rotation forest method first extracts principal components from the various sets of predictor variables that are considered, and enters the principal components as predictors (as opposed to directly entering the original predictor variables as is done when using random forest).  In more general terms, the rotation forest method is essentially a twist on the random forest method whereby principal component regression (or, principal component classification) is employed.  As such, the rotation forest method is particularly well-suited for dealing with any multi-collinearity that may exist among the predictors.  When training our model, we will use the default number of variable subsets (i.e. the number of subsets that results in 3 features per subset), and the default number of base classifiers (i.e. 10).  
+
 ```{r,eval=FALSE}
-ed_loess <- train(Diabetes_binary_f ~ ., data = ed_train,
-  method = "gamLoess",
+ed_rot <- train(Diabetes_binary_f ~ ., data = ed_train,
+  method = "rotationForest",
   metric="logLoss",
   preProcess = c("center", "scale"),
   trControl = trainControl(method = "cv", number = 5, 
-                           classProbs = TRUE, summaryFunction = mnLogLoss),
-  tuneGrid = expand.grid(span = seq(0.5, 0.9, len = 5), degree = 1))
-#tuning parameters as currently shown are borrowed from https://www.statology.org/loess-regression-in-r/
+                           classProbs = TRUE, summaryFunction = mnLogLoss))
 
-ed_loess
-
+ed_rot
 ```
 
 
 ## Sixth method: Bayesian Generalized Linear Model
+
+The generalized linear model (GLM) is an approach incorporating various probability distributions into a fitting procedure to describe variability. A GLM with Bayesian inference is often used to avoid over fitting. A Bayesian GLM can flexibly integrate various probability distributions as model residuals and parameter uncertainty.
+
 ```{r,cache=FALSE}
 ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
              method="bayesglm", 
@@ -404,34 +403,8 @@ ed_bglm
 We have six best models (one for each model type above). Now compare all six models on the test
 set and declare an overall winner!
 
-```{r,eval=FALSE}
-# Method 1
-a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
-ifelse(a!=3,
-       ifelse(a==1,
-              CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic1,newdata = ed_test)),
-              CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic2,newdata = ed_test))
-              ),
-       CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic3,newdata = ed_test))
-  )
-(CM1<-CM1$overall[1])
-# Method 2
-CM2<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_lasso,newdata = ed_test))
-# Method 3
-CM3<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_ct,newdata = ed_test))
-# Method 4
-CM4<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
-(CM<-CM4$overall[1])
-# Method 5
-CM5<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_loess,newdata = ed_test))
-# Method 6
-CM6<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_bglm,newdata = ed_test))
-(CM6<-CM6$overall[1])
-
-CM<-c(CM1,CM2,CM3,CM4,CM5,CM6)
-paste0("mode",c("1","2","3","4","5","6")[which.max(CM)]," is the best model")
-```
 ```{r}
+# set a function to output logLoss value from each model by the test set
 choose <- function(in_model)
 {
 pred <- predict(in_model, ed_test)
@@ -444,6 +417,44 @@ logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
 
 ```{r}
 ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
-choose(in_model = ed_logistic1)
+
+# Method 1
+# only output the best from method 1
+a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
+ifelse(a!=3,
+       ifelse(a==1,
+              CM1<-choose(in_model = ed_logistic1),
+              CM1<-choose(in_model = ed_logistic2)
+              ),
+       CM1<-choose(in_model = ed_logistic3)
+  )
+paste0("logistic has a logLoss of ",CM1)
+
+# Method 2
+CM2<-choose(in_model = ed_lasso)
+paste0("lasso has a logLoss of ",CM2)
+
+# Method 3
+CM3<-choose(in_model = ed_ct)
+paste0("classification tree has a logLoss of ",CM3)
+
+# Method 4
+#CM4<-choose(in_model = ed_rf)
+#paste0("random forests has a logLoss of ",CM4)
+
+# Method 5
+CM5<-choose(in_model = ed_rot)
+paste0("rotation forests has a logLoss of ",CM5)
+
+# Method 6
+CM6<-choose(in_model = ed_bglm)
+paste0("glm has a logLoss of ",CM6)
+```
+## Final conclusion
+```{r}
+CM<-c(CM1,CM2,CM3,#CM4,
+      CM5,CM6)
+paste0("model ",c("1","2","3",#"4",
+                "5","6")[which.min(CM)]," is the best model")
 ```
 End report!
