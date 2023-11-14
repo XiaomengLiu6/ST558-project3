@@ -1,12 +1,10 @@
 # render the "project3.RMD" file as a .md file called README.md.
 
-rmarkdown::render(
-  input = "project3.rmd",
-  output_format = "github_document",
-  output_file = "README.md",
-  runtime = "static",
-  clean = TRUE,
-  params = NULL,
-  encoding = "UTF-8"
-)
-
+#a brief description of the purpose of the repo
+#• a list of R packages used
+#• the code used to create the analyses from a single .Rmd file (i.e. the render() code)
+#• links to .html files of the generated analyses (which will be created by github pages! Not you!) For
+#example,
+#– Analysis for [College Graduates](college_graduate_analysis.html). Note you should only
+#have a college_graduate_analysis.md file in the repo - github pages will render the .html file
+#for you

@@ -7,6 +7,8 @@ output:
     toc: true
     toc_depth: 3
     number_sections: false
+params:
+  ed_level: "4"
 ---
 
 ```{r setup, include=FALSE}
@@ -14,12 +16,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # library
+
+All the libraries used in this file are included here.
 ```{r, message=FALSE}
 library(readr)
 library(dplyr)
 library(ggplot2)
 library(corrplot)
 library(caret)
+library(ModelMetrics)
 ```
 
 # Introduction section
@@ -117,7 +122,7 @@ diabetes$Income_f	 <- as.factor(diabetes$Income)
 
 
 #subset to specific level of education per *params* setting
-temp <- subset(diabetes, Education==4)
+temp <- subset(diabetes, Education==params$ed_level)
 ```
 
 # Summarizations
@@ -331,7 +336,7 @@ The random forest uses the same idea as bagging. It creates multiple trees from 
 ###why we might use it instead of a basic classification tree:
 We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
 
-```{r,cache=FALSE}
+```{r,cache=FALSE,eval=FALSE}
 ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
              data=ed_train,
              method="rf", 
@@ -342,10 +347,10 @@ ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
 )
 ed_rf
 ```
-## Fifth method: 
+## Fifth method: loess method
 
 new method by Erich
-```{r}
+```{r,eval=FALSE}
 ed_loess <- train(Diabetes_binary_f ~ ., data = ed_train,
   method = "gamLoess",
   metric="logLoss",
@@ -374,7 +379,7 @@ ed_bglm
 # Final Model Selection
 
 You should now have six best models (one for each model type above)
-```{r}
+```{r,eval=FALSE}
 # Method 1
 a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
 ifelse(a!=3,
@@ -395,10 +400,24 @@ CM4<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed
 # Method 5
 CM5<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_loess,newdata = ed_test))
 # Method 6
-CM6<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_loess,newdata = ed_test))
+CM6<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_bglm,newdata = ed_test))
 (CM6<-CM6$overall[1])
 
 CM<-c(CM1,CM2,CM3,CM4,CM5,CM6)
 paste0("mode",c("1","2","3","4","5","6")[which.max(CM)]," is the best model")
 ```
+```{r}
+choose <- function(in_model)
+{
+pred <- predict(in_model, ed_test)
+pred <- ifelse(pred=="no",0,1)
+#as.data.frame is used here to avoid error as illustrated here: #https://www.statology.org/r-error-operator-is-invalid-for-atomic-vectors/
+logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
+}
 
+```
+
+```{r}
+ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
+choose(in_model = ed_logistic1)
+```
