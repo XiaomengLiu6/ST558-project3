@@ -3,7 +3,7 @@ title: "project3"
 author: "Xiaomeng Liu"
 date: "2023-11-05"
 output:
-  github_document:
+  html_document:
     toc: true
     toc_depth: 3
     number_sections: false
@@ -24,6 +24,7 @@ library(corrplot)
 library(caret)
 library(gam)
 library(ModelMetrics)
+library(rotationForest)
 ```
 
 # Introduction section
@@ -338,17 +339,25 @@ ct_fit
 
 new method by Erich
 ```{r}
-loess_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
-  method = "gamLoess",
+#loess_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
+#  method = "gamLoess",
+#  metric="logLoss",
+#  preProcess = c("center", "scale"),
+#  trControl = trainControl(method = "cv", number = 5, 
+#                           classProbs = TRUE, summaryFunction = mnLogLoss),
+#  tuneGrid = expand.grid(span = seq(0.5, 0.9, len = 5), degree = 1))
+#tuning parameters as currently shown are borrowed from https://www.statology.org/loess-regression-in-r/
+
+#loess_fit
+
+rot_fit <- train(Diabetes_binary_f ~ ., data = ed_train,
+  method = "rotationForest",
   metric="logLoss",
   preProcess = c("center", "scale"),
   trControl = trainControl(method = "cv", number = 5, 
-                           classProbs = TRUE, summaryFunction = mnLogLoss),
-  tuneGrid = expand.grid(span = seq(0.5, 0.9, len = 5), degree = 1))
-#tuning parameters as currently shown are borrowed from https://www.statology.org/loess-regression-in-r/
+                           classProbs = TRUE, summaryFunction = mnLogLoss))
 
-loess_fit
-
+rot_fit
 ```
 
 #### Sixth method:
@@ -367,8 +376,8 @@ pred <- as.data.frame(predict(in_model, ed_test))
 logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred$fitted.values)
 }
 
-choose(in_model = ed_logistic)
-choose(in_model = lasso_fit)
-choose(in_model = ct_fit)
-choose(in_model = loess_fit)
+#choose(in_model = ed_logistic)
+#choose(in_model = lasso_fit)
+#choose(in_model = ct_fit)
+#choose(in_model = loess_fit)
 ```
