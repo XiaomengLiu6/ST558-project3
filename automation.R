@@ -6,5 +6,5 @@ reports <- tibble(output_file, params)
 library(rmarkdown)
 apply(reports, MARGIN = 1,
   FUN = function(x){
-  render(input = "project3.Rmd", output_file = x[[1]], params = x[[2]])
+  render(input = "project3.Rmd", output_file = x[[1]], params = x[[2]],output_format = "md_document")
   })

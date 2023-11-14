@@ -1,112 +1,96 @@
-project3
-================
-Xiaomeng Liu
-2023-11-05
+# Goal
 
-- [library](#library)
-- [Introduction section](#introduction-section)
-- [Data](#data)
-  - [Read in the data](#read-in-the-data)
-  - [Combine 1 and 2 Education
-    levels](#combine-1-and-2-education-levels)
-  - [Convert variables to factors](#convert-variables-to-factors)
-- [Summarizations](#summarizations)
-- [Modeling](#modeling)
-  - [Data cleaning](#data-cleaning)
-  - [train and test set](#train-and-test-set)
-  - [what log loss is:](#what-log-loss-is)
-  - [First method: logistic
-    regression](#first-method-logistic-regression)
-  - [Second method: Lasso logistic](#second-method-lasso-logistic)
-  - [Third method: Classification
-    tree](#third-method-classification-tree)
-  - [Fourth method: Random forest](#fourth-method-random-forest)
-  - [Fifth method: loess method](#fifth-method-loess-method)
-  - [Sixth method: Bayesian Generalized Linear
-    Model](#sixth-method-bayesian-generalized-linear-model)
-- [Final Model Selection](#final-model-selection)
+We analyzed a Diabetes Health Indicator Dataset. We were doing a
+separate analysis (basic EDA and the fitting/selection of predictive
+models) for each of these five Education groups using a single .Rmd
+file. In the file, we had a parameter corresponding to which Education
+level we were looking at and we subset the data to only use those
+observations for that analysis. We created render() code similar to the
+lecture to make the process of creating the five separate analysis
+simple to do.
 
 # library
 
 All the libraries used in this file are included here.
 
-``` r
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(corrplot)
-library(caret)
-library(ModelMetrics)
-```
+    library(readr)
+    library(dplyr)
+    library(ggplot2)
+    library(corrplot)
+    library(caret)
+    library(ModelMetrics)
 
 # Introduction section
 
-``` r
-  #per https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf,
-  #here are value meanings for the education variable:
-    #1 = Never attended school or only kindergarten 
-    #2 = Grades 1 through 8 (Elementary)
-    #3 = Grades 9 through 11 (Some high school)
-    #4 = Grade 12 or GED (High school graduate) 
-    #5 = College 1 year to 3 years (Some college or technical school)
-    #6 = College 4 years or more (College graduate)
-    #9 = Refused
+This is the section that we briefly describes the data and the variables
+you have to work with (just discuss the ones we use in our analysis),
+and describes the purpose of our EDA and modeling, along with the end
+result we would be creating.
 
-#and here are values for other non-binary variables:
-  #income
-    #1 = Less than $10,000
-    #2 = Less than $15,000 ($10,000 to less than $15,000)
-    #3 = Less than $20,000 ($15,000 to less than $20,000)
-    #4 = Less than $25,000 ($20,000 to less than $25,000)
-    #5 = Less than $35,000 ($25,000 to less than $35,000)
-    #6 = Less than $50,000 ($35,000 to less than $50,000)
-    #7 = Less than $75,000 ($50,000 to less than $75,000)
-    #8 = $75,000 or more
-    #77 = Don’t know/Not sure
-    #99 = Refused
+      #per https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf,
+      #here are value meanings for the education variable:
+        #1 = Never attended school or only kindergarten 
+        #2 = Grades 1 through 8 (Elementary)
+        #3 = Grades 9 through 11 (Some high school)
+        #4 = Grade 12 or GED (High school graduate) 
+        #5 = College 1 year to 3 years (Some college or technical school)
+        #6 = College 4 years or more (College graduate)
+        #9 = Refused
 
-  #Age
-    #1 = Age 18 to 24
-    #2 = Age 25 to 29
-    #3 = Age 30 to 34
-    #4 = Age 35 to 39
-    #5 = Age 40 to 44
-    #6 = Age 45 to 49
-    #7 = Age 50 to 54
-    #8 = Age 55 to 59
-    #9 = Age 60 to 64
-    #10 = Age 65 to 69
-    #11 = Age 70 to 74
-    #12 = Age 75 to 79
-    #13 = Age 80 or older
-    #14 = Don’t know/Refused/Missing
+    #and here are values for other non-binary variables:
+      #income
+        #1 = Less than $10,000
+        #2 = Less than $15,000 ($10,000 to less than $15,000)
+        #3 = Less than $20,000 ($15,000 to less than $20,000)
+        #4 = Less than $25,000 ($20,000 to less than $25,000)
+        #5 = Less than $35,000 ($25,000 to less than $35,000)
+        #6 = Less than $50,000 ($35,000 to less than $50,000)
+        #7 = Less than $75,000 ($50,000 to less than $75,000)
+        #8 = $75,000 or more
+        #77 = Don’t know/Not sure
+        #99 = Refused
 
-  #GenHlth
-    #1 = excellent 
-    #2 = very good 
-    #3 = good 
-    #4 = fair 
-    #5 = poor 
+      #Age
+        #1 = Age 18 to 24
+        #2 = Age 25 to 29
+        #3 = Age 30 to 34
+        #4 = Age 35 to 39
+        #5 = Age 40 to 44
+        #6 = Age 45 to 49
+        #7 = Age 50 to 54
+        #8 = Age 55 to 59
+        #9 = Age 60 to 64
+        #10 = Age 65 to 69
+        #11 = Age 70 to 74
+        #12 = Age 75 to 79
+        #13 = Age 80 or older
+        #14 = Don’t know/Refused/Missing
 
-  #Sex is coded as 0 = female, 1 = male
-```
+      #GenHlth
+        #1 = excellent 
+        #2 = very good 
+        #3 = good 
+        #4 = fair 
+        #5 = poor 
+
+      #Sex is coded as 0 = female, 1 = male
 
 # Data
 
+Use a relative path to import the data. Subset the data to work on the
+Education level of interest. We convert a lot of the variables to
+factors with meaningful level names.
+
 ### Read in the data
 
-``` r
-#read in csv file
-diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
-```
+    #read in csv file
+    diabetes<-read.csv("diabetes_binary_health_indicators_BRFSS2015.csv")
 
 ### Combine 1 and 2 Education levels
 
-``` r
-#create collapsed version of education variable
-diabetes$Education <- recode(diabetes$Education, `1` = 2)
-table(diabetes$Education)
-```
+    #create collapsed version of education variable
+    diabetes$Education <- recode(diabetes$Education, `1` = 2)
+    table(diabetes$Education)
 
     ## 
     ##      2      3      4      5      6 
@@ -114,76 +98,73 @@ table(diabetes$Education)
 
 ### Convert variables to factors
 
-``` r
-#create factor version of variables, where applicable
-#in order to facilitate the EDA, for now at least, we'll retain both the factor version and the numeric version of each variable (we may need to drop one version, though, before running models)
-diabetes$Diabetes_binary_f   <- as.factor(diabetes$Diabetes_binary)
-diabetes$HighBP_f    <- as.factor(diabetes$HighBP)
-diabetes$HighChol_f  <- as.factor(diabetes$HighChol)
-diabetes$CholCheck_f     <- as.factor(diabetes$CholCheck)
-#BMI -- this is a continuous var
-diabetes$Smoker_f    <- as.factor(diabetes$Smoker)
-diabetes$Stroke_f    <- as.factor(diabetes$Stroke)
-diabetes$HeartDiseaseorAttack_f  <- as.factor(diabetes$HeartDiseaseorAttack)
-diabetes$PhysActivity_f  <- as.factor(diabetes$PhysActivity)
-diabetes$Fruits_f    <- as.factor(diabetes$Fruits)
-diabetes$Veggies_f   <- as.factor(diabetes$Veggies)
-diabetes$HvyAlcoholConsump_f     <- as.factor(diabetes$HvyAlcoholConsump)
-diabetes$AnyHealthcare_f     <- as.factor(diabetes$AnyHealthcare)
-diabetes$NoDocbcCost_f   <- as.factor(diabetes$NoDocbcCost)
-diabetes$GenHlth_f <-  as.factor(diabetes$GenHlth)
-#MentHlth -- this is a continuous var
-#PhysHlth -- this is a continuous var
-diabetes$DiffWalk_f  <- as.factor(diabetes$DiffWalk)
-diabetes$Sex_f   <- as.factor(diabetes$Sex)
-diabetes$Age_f   <- as.factor(diabetes$Age)
-diabetes$Education_f     <- as.factor(diabetes$Education)
-diabetes$Income_f    <- as.factor(diabetes$Income)
+    #create factor version of variables, where applicable
+    #in order to facilitate the EDA, for now at least, we'll retain both the factor version and the numeric version of each variable (we may need to drop one version, though, before running models)
+    diabetes$Diabetes_binary_f   <- as.factor(diabetes$Diabetes_binary)
+    diabetes$HighBP_f    <- as.factor(diabetes$HighBP)
+    diabetes$HighChol_f  <- as.factor(diabetes$HighChol)
+    diabetes$CholCheck_f     <- as.factor(diabetes$CholCheck)
+    #BMI -- this is a continuous var
+    diabetes$Smoker_f    <- as.factor(diabetes$Smoker)
+    diabetes$Stroke_f    <- as.factor(diabetes$Stroke)
+    diabetes$HeartDiseaseorAttack_f  <- as.factor(diabetes$HeartDiseaseorAttack)
+    diabetes$PhysActivity_f  <- as.factor(diabetes$PhysActivity)
+    diabetes$Fruits_f    <- as.factor(diabetes$Fruits)
+    diabetes$Veggies_f   <- as.factor(diabetes$Veggies)
+    diabetes$HvyAlcoholConsump_f     <- as.factor(diabetes$HvyAlcoholConsump)
+    diabetes$AnyHealthcare_f     <- as.factor(diabetes$AnyHealthcare)
+    diabetes$NoDocbcCost_f   <- as.factor(diabetes$NoDocbcCost)
+    diabetes$GenHlth_f <-  as.factor(diabetes$GenHlth)
+    #MentHlth -- this is a continuous var
+    #PhysHlth -- this is a continuous var
+    diabetes$DiffWalk_f  <- as.factor(diabetes$DiffWalk)
+    diabetes$Sex_f   <- as.factor(diabetes$Sex)
+    diabetes$Age_f   <- as.factor(diabetes$Age)
+    diabetes$Education_f     <- as.factor(diabetes$Education)
+    diabetes$Income_f    <- as.factor(diabetes$Income)
 
 
-#subset to specific level of education per *params* setting
-temp <- subset(diabetes, Education==params$ed_level)
-```
+    #subset to specific level of education per *params* setting
+    temp <- subset(diabetes, Education==params$ed_level)
 
 # Summarizations
 
-``` r
-#confirm that we're working with the desired set of cases
-table(temp$Education, temp$Education_f)
-```
+We produce some basic (but meaningful) summary statistics and plots
+about the data we are working with (especially as it relates to our
+response). We did our EDA on the full (subsetted to a single Education
+level) data.
+
+    #confirm that we're working with the desired set of cases
+    table(temp$Education, temp$Education_f)
 
     ##    
     ##         2     3     4     5     6
     ##   4     0     0 62750     0     0
 
-``` r
-ggplot(data=temp, aes(x=Education_f)) + 
-  geom_dotplot(binwidth = .05, method = "histodot") + 
-  labs(title = "confirm that we're working with the desired set of cases")
-```
+    ggplot(data=temp, aes(x=Education_f)) + 
+      geom_dotplot(binwidth = .05, method = "histodot") + 
+      labs(title = "confirm that we're working with the desired set of cases")
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-1.png)
 
-``` r
-#function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
-#(I still need to flesh out this function such that it labels the plots)
-explore <- function(by_var)
-{
-results1 <- temp %>%
-  group_by({{by_var}}) %>%
-  summarize(diabetes_rate = mean(Diabetes_binary))
-    #passing variable names to function using curly brackets:
-    #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
-print(results1)
+    #function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
+    #(I still need to flesh out this function such that it labels the plots)
+    explore <- function(by_var)
+    {
+    results1 <- temp %>%
+      group_by({{by_var}}) %>%
+      summarize(diabetes_rate = mean(Diabetes_binary))
+        #passing variable names to function using curly brackets:
+        #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
+    print(results1)
 
-results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
-  geom_bar(stat="count")
-print(results2)
-}
+    results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
+      geom_bar(stat="count")
+    print(results2)
+    }
 
-#probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
-explore(by_var = HighBP_f)
-```
+    #probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
+    explore(by_var = HighBP_f)
 
     ## # A tibble: 2 × 2
     ##   HighBP_f diabetes_rate
@@ -191,11 +172,9 @@ explore(by_var = HighBP_f)
     ## 1 0               0.0830
     ## 2 1               0.268
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-2.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-2.png)
 
-``` r
-explore(by_var = HighChol_f)
-```
+    explore(by_var = HighChol_f)
 
     ## # A tibble: 2 × 2
     ##   HighChol_f diabetes_rate
@@ -203,11 +182,9 @@ explore(by_var = HighChol_f)
     ## 1 0                  0.107
     ## 2 1                  0.257
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-3.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-3.png)
 
-``` r
-explore(by_var = CholCheck_f)
-```
+    explore(by_var = CholCheck_f)
 
     ## # A tibble: 2 × 2
     ##   CholCheck_f diabetes_rate
@@ -215,11 +192,9 @@ explore(by_var = CholCheck_f)
     ## 1 0                  0.0374
     ## 2 1                  0.182
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-4.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-4.png)
 
-``` r
-explore(by_var = Smoker_f)
-```
+    explore(by_var = Smoker_f)
 
     ## # A tibble: 2 × 2
     ##   Smoker_f diabetes_rate
@@ -227,11 +202,9 @@ explore(by_var = Smoker_f)
     ## 1 0                0.170
     ## 2 1                0.182
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-5.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-5.png)
 
-``` r
-explore(by_var = Stroke_f)
-```
+    explore(by_var = Stroke_f)
 
     ## # A tibble: 2 × 2
     ##   Stroke_f diabetes_rate
@@ -239,11 +212,9 @@ explore(by_var = Stroke_f)
     ## 1 0                0.168
     ## 2 1                0.322
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-6.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-6.png)
 
-``` r
-explore(by_var = HeartDiseaseorAttack_f)
-```
+    explore(by_var = HeartDiseaseorAttack_f)
 
     ## # A tibble: 2 × 2
     ##   HeartDiseaseorAttack_f diabetes_rate
@@ -251,11 +222,9 @@ explore(by_var = HeartDiseaseorAttack_f)
     ## 1 0                              0.154
     ## 2 1                              0.340
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-7.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-7.png)
 
-``` r
-explore(by_var = PhysActivity_f)
-```
+    explore(by_var = PhysActivity_f)
 
     ## # A tibble: 2 × 2
     ##   PhysActivity_f diabetes_rate
@@ -263,11 +232,9 @@ explore(by_var = PhysActivity_f)
     ## 1 0                      0.223
     ## 2 1                      0.153
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-8.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-8.png)
 
-``` r
-explore(by_var = Fruits_f)
-```
+    explore(by_var = Fruits_f)
 
     ## # A tibble: 2 × 2
     ##   Fruits_f diabetes_rate
@@ -275,11 +242,9 @@ explore(by_var = Fruits_f)
     ## 1 0                0.185
     ## 2 1                0.170
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-9.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-9.png)
 
-``` r
-explore(by_var = Veggies_f)
-```
+    explore(by_var = Veggies_f)
 
     ## # A tibble: 2 × 2
     ##   Veggies_f diabetes_rate
@@ -287,11 +252,9 @@ explore(by_var = Veggies_f)
     ## 1 0                 0.200
     ## 2 1                 0.168
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-10.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-10.png)
 
-``` r
-explore(by_var = HvyAlcoholConsump_f)
-```
+    explore(by_var = HvyAlcoholConsump_f)
 
     ## # A tibble: 2 × 2
     ##   HvyAlcoholConsump_f diabetes_rate
@@ -299,11 +262,9 @@ explore(by_var = HvyAlcoholConsump_f)
     ## 1 0                          0.182 
     ## 2 1                          0.0743
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-11.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-11.png)
 
-``` r
-explore(by_var = AnyHealthcare_f)
-```
+    explore(by_var = AnyHealthcare_f)
 
     ## # A tibble: 2 × 2
     ##   AnyHealthcare_f diabetes_rate
@@ -311,11 +272,9 @@ explore(by_var = AnyHealthcare_f)
     ## 1 0                       0.128
     ## 2 1                       0.180
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-12.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-12.png)
 
-``` r
-explore(by_var = NoDocbcCost_f)
-```
+    explore(by_var = NoDocbcCost_f)
 
     ## # A tibble: 2 × 2
     ##   NoDocbcCost_f diabetes_rate
@@ -323,11 +282,9 @@ explore(by_var = NoDocbcCost_f)
     ## 1 0                     0.174
     ## 2 1                     0.195
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-13.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-13.png)
 
-``` r
-explore(by_var = GenHlth_f)
-```
+    explore(by_var = GenHlth_f)
 
     ## # A tibble: 5 × 2
     ##   GenHlth_f diabetes_rate
@@ -338,11 +295,9 @@ explore(by_var = GenHlth_f)
     ## 4 4                0.316 
     ## 5 5                0.370
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-14.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-14.png)
 
-``` r
-explore(by_var = DiffWalk_f)
-```
+    explore(by_var = DiffWalk_f)
 
     ## # A tibble: 2 × 2
     ##   DiffWalk_f diabetes_rate
@@ -350,11 +305,9 @@ explore(by_var = DiffWalk_f)
     ## 1 0                  0.135
     ## 2 1                  0.316
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-15.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-15.png)
 
-``` r
-explore(by_var = Sex_f)
-```
+    explore(by_var = Sex_f)
 
     ## # A tibble: 2 × 2
     ##   Sex_f diabetes_rate
@@ -362,11 +315,9 @@ explore(by_var = Sex_f)
     ## 1 0             0.174
     ## 2 1             0.180
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-16.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-16.png)
 
-``` r
-explore(by_var = Age_f)
-```
+    explore(by_var = Age_f)
 
     ## # A tibble: 13 × 2
     ##    Age_f diabetes_rate
@@ -385,11 +336,9 @@ explore(by_var = Age_f)
     ## 12 12           0.233 
     ## 13 13           0.195
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-17.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-17.png)
 
-``` r
-explore(by_var = Income_f)
-```
+    explore(by_var = Income_f)
 
     ## # A tibble: 8 × 2
     ##   Income_f diabetes_rate
@@ -403,109 +352,117 @@ explore(by_var = Income_f)
     ## 7 7               0.138 
     ## 8 8               0.0979
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-18.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-18.png)
 
-``` r
-#correlation matrix (outcome var x continuous vars)
-corr_vars <-
-  temp %>% select(c(Diabetes_binary, BMI, MentHlth, PhysHlth))
-correlation <- cor(corr_vars, method = "spearman")
-corrplot(correlation, type = "upper", tl.pos = "lt")
-corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
-```
+    #correlation matrix (outcome var x continuous vars)
+    corr_vars <-
+      temp %>% select(c(Diabetes_binary, BMI, MentHlth, PhysHlth))
+    correlation <- cor(corr_vars, method = "spearman")
+    corrplot(correlation, type = "upper", tl.pos = "lt")
+    corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-19.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-19.png)
 
-``` r
-#density plots / boxplots (outcome var x continuous vars)
-#I'm guessing we could just choose one or the other
-ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-```
+    #density plots / boxplots (outcome var x continuous vars)
+    #I'm guessing we could just choose one or the other
+    ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
+      geom_density(adjust = 0.5, alpha = 0.5)
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-20.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-20.png)
 
-``` r
-ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
-```
+    ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-21.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-21.png)
 
-``` r
-ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-```
+    ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
+      geom_density(adjust = 0.5, alpha = 0.5)
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-22.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-22.png)
 
-``` r
-ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
-```
+    ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-23.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-23.png)
 
-``` r
-ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
-  geom_density(adjust = 0.5, alpha = 0.5)
-```
+    ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
+      geom_density(adjust = 0.5, alpha = 0.5)
 
-![](ed_level_eq_4_files/figure-gfm/unnamed-chunk-6-24.png)<!-- -->
+![](ed_level_eq_4_files/figure-markdown_strict/unnamed-chunk-6-24.png)
 
-``` r
-bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
-```
+    bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
 
 # Modeling
 
+We did some data cleaning and split the data into a training (70% of the
+data) and test set (30% of the data). Use set.seed() to make things
+reproducible. Then we will fit different models using different approach
+and provide explanations.
+
 ## Data cleaning
 
-``` r
-#prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
-#we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
-temp$Diabetes_binary     <- NULL 
-temp$HighBP  <- NULL
-temp$HighChol    <- NULL
-temp$CholCheck   <- NULL
-temp$Smoker  <- NULL
-temp$Stroke  <- NULL
-temp$HeartDiseaseorAttack    <- NULL
-temp$PhysActivity    <- NULL
-temp$Fruits  <- NULL
-temp$Veggies     <- NULL
-temp$HvyAlcoholConsump   <- NULL
-temp$AnyHealthcare   <- NULL
-temp$NoDocbcCost     <- NULL 
-temp$GenHlth <-  NULL
-temp$DiffWalk    <- NULL
-temp$Sex     <- NULL
-temp$Age     <- NULL
-temp$Education   <- NULL
-temp$Education_f     <- NULL
-temp$Income  <- NULL
+    #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
+    #we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
+    temp$Diabetes_binary     <- NULL 
+    temp$HighBP  <- NULL
+    temp$HighChol    <- NULL
+    temp$CholCheck   <- NULL
+    temp$Smoker  <- NULL
+    temp$Stroke  <- NULL
+    temp$HeartDiseaseorAttack    <- NULL
+    temp$PhysActivity    <- NULL
+    temp$Fruits  <- NULL
+    temp$Veggies     <- NULL
+    temp$HvyAlcoholConsump   <- NULL
+    temp$AnyHealthcare   <- NULL
+    temp$NoDocbcCost     <- NULL 
+    temp$GenHlth <-  NULL
+    temp$DiffWalk    <- NULL
+    temp$Sex     <- NULL
+    temp$Age     <- NULL
+    temp$Education   <- NULL
+    temp$Education_f     <- NULL
+    temp$Income  <- NULL
 
-temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
-temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
-```
+    temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
+    temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
 
-## train and test set
+## train and test set split
 
-``` r
-# set the seed
-set.seed(433)
-# split the training and testing
-indextrain<-createDataPartition(y=temp$Diabetes_binary,p=0.7,list=FALSE)
-ed_train<-temp[indextrain,]
-ed_test<-temp[-indextrain,]
-```
+    # set the seed
+    set.seed(433)
+    # split the training and testing
+    indextrain<-createDataPartition(y=temp$Diabetes_binary,p=0.7,list=FALSE)
+    ed_train<-temp[indextrain,]
+    ed_test<-temp[-indextrain,]
+
+The goal is to create models for predicting the Diabetes\_binary
+variable (using caret). We’ll use logLoss as our metric to evaluate
+models. For all model types use logLoss with 5 fold cross-validation to
+select the best model.
 
 ## what log loss is:
 
 Log loss is a common evaluation metric for binary classification models.
 It measure the performance of a model by quantifying the difference
-between predicted probabilities and actual values. We prefer it because
-log loss penalizes confident and incorrect predictors more heavily.It
-also provides a continuous and differentiable meausre of the model’s
-performance, making it suitable of optimization algorithms.
+between predicted probabilities and actual values. The more the
+predicted probability diverges from the actual value, the higher is the
+log-loss value.A lower log loss value means better
+predictions.Mathematically, log loss is the negative average of the log
+of correct predicted probabilities for each instance.
+
+We prefer it because log loss penalizes confident and incorrect
+predictors more heavily. It also provides a continuous and
+differentiable meausre of the model’s performance, making it suitable of
+optimization algorithms. It could be interpreted as the logarithmic
+measure of the likelihood of the predicted probabilities aligning with
+the true labels.
+
+### related links
+
+Here are two website links I found useful for explaining this term:
+
+<https://www.analyticsvidhya.com/blog/2020/11/binary-cross-entropy-aka-log-loss-the-cost-function-used-in-logistic-regression/>
+
+<https://towardsdatascience.com/intuition-behind-log-loss-score-4e0c9979680a>
 
 ## First method: logistic regression
 
@@ -514,7 +471,7 @@ performance, making it suitable of optimization algorithms.
 The logistic regression is modeling average number of successes for a
 given x, i.e. probability of success.Basic logistic regression models
 success probability using the logistic function
-$P(success|yard)=\frac{e^{\beta_0+\beta_1x}}{1+e^{\beta_0+\beta_1x}}$
+$P(success|yard)=\frac{e^{\beta\_0+\beta\_1x}}{1+e^{\beta\_0+\beta\_1x}}$
 
 \###why we apply it to this kind of data We have a response variable
 that is success/failure and it is perfect for fitting a logistic
@@ -523,15 +480,13 @@ regression mode.
 \###fit three candidate logistic regression models and choose the best
 model.
 
-``` r
-ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
-             method="glm", 
-             metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
-             preProcess=c("center","scale")
-)
-ed_logistic1
-```
+    ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
+                 method="glm", 
+                 metric="logLoss",
+                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+                 preProcess=c("center","scale")
+    )
+    ed_logistic1
 
     ## Generalized Linear Model 
     ## 
@@ -547,15 +502,13 @@ ed_logistic1
     ##   logLoss 
     ##   0.413536
 
-``` r
-ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=ed_train,
-             method="glm", 
-             metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
-             preProcess=c("center","scale")
-)
-ed_logistic2
-```
+    ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=ed_train,
+                 method="glm", 
+                 metric="logLoss",
+                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+                 preProcess=c("center","scale")
+    )
+    ed_logistic2
 
     ## Generalized Linear Model 
     ## 
@@ -571,15 +524,13 @@ ed_logistic2
     ##   logLoss  
     ##   0.4121787
 
-``` r
-ed_logistic3<-train(Diabetes_binary_f~.,data=ed_train,
-             method="glm", 
-             metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
-             preProcess=c("center","scale")
-)
-ed_logistic3
-```
+    ed_logistic3<-train(Diabetes_binary_f~.,data=ed_train,
+                 method="glm", 
+                 metric="logLoss",
+                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+                 preProcess=c("center","scale")
+    )
+    ed_logistic3
 
     ## Generalized Linear Model 
     ## 
@@ -595,10 +546,8 @@ ed_logistic3
     ##   logLoss  
     ##   0.3844808
 
-``` r
-# return the result
-paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))])
-```
+    # return the result
+    paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))])
 
     ## [1] "According to the results, the lowest logLoss is the model 3"
 
@@ -607,21 +556,25 @@ paste0("According to the results, the lowest logLoss is the model ", c("1","2","
 Lasso models aim to leverage the bias-variance trade-off by purposefully
 introducing small amounts of bias while training the model, with the
 hope of ultimately decreasing variance (and thereby improving
-performance when using the model on test data). PROBABLY NEED TO SAY
-MORE HERE (this might help:
-<https://www.statology.org/lasso-regression/>)
+performance when using the model on test data). Instead of minimizing
+the residual sum of squares, the lasso method attempts to minimize the
+residual sum of squares *plus a so-called “shrinkage penalty”*. In
+effect, the shrinkage penalty constrains regression coefficients, and in
+so doing, allows the model to better generalize to test data. Here we
+use cross-validation to test different values for the shrinkage penalty
+in hopes of determining its optimal value, i.e. the shinkage penalty
+value which eliminates the greatest amount of variance in exchange for
+introduction of the smallest amount of bias.
 
-``` r
-ed_lasso <- train(Diabetes_binary_f ~ ., data = ed_train,
-  method = "glmnet",
-  metric="logLoss",
-  preProcess = c("center", "scale"),
-  trControl = trainControl(method = "cv", number = 5, 
-                           classProbs = TRUE, summaryFunction = mnLogLoss),
-  tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)))
+    ed_lasso <- train(Diabetes_binary_f ~ ., data = ed_train,
+      method = "glmnet",
+      metric="logLoss",
+      preProcess = c("center", "scale"),
+      trControl = trainControl(method = "cv", number = 5, 
+                               classProbs = TRUE, summaryFunction = mnLogLoss),
+      tuneGrid = expand.grid(alpha = 1, lambda = seq(0, 1, by = 0.1)))
 
-ed_lasso
-```
+    ed_lasso
 
     ## glmnet 
     ## 
@@ -656,23 +609,23 @@ ed_lasso
 Next we predict the presence of diabetes using a classification tree, in
 which the predictor space is divided into various “regions”, and the
 predicted value for any given observation is the most common
-classification among all other observations in that region. Here we
-train our model using 5-fold cross-validation as well as different
-tuning parameters to find the optimal number and types of tree splits.
-PROBABLY NEED TO SAY MORE HERE
+classification among all other observations in that region.
+Classification trees are advantageous in that they are relatively easy
+to understand, and that they automatically account for interaction
+effects. Here we train our model using 5-fold cross-validation as well
+as different tuning parameters to find the optimal number and types of
+tree splits.
 
-``` r
-#classification tree
-ed_ct <- train(Diabetes_binary_f ~ ., data = ed_train,
-  method = "rpart",
-  metric="logLoss",
-  preProcess = c("center", "scale"),
-  trControl = trainControl(method = "cv", number = 5, 
-                           classProbs = TRUE, summaryFunction = mnLogLoss),
-  tuneGrid = data.frame(cp = seq(from = .001, to = .1, by = .001)))
+    #classification tree
+    ed_ct <- train(Diabetes_binary_f ~ ., data = ed_train,
+      method = "rpart",
+      metric="logLoss",
+      preProcess = c("center", "scale"),
+      trControl = trainControl(method = "cv", number = 5, 
+                               classProbs = TRUE, summaryFunction = mnLogLoss),
+      tuneGrid = data.frame(cp = seq(from = .001, to = .1, by = .001)))
 
-ed_ct
-```
+    ed_ct
 
     ## CART 
     ## 
@@ -802,46 +755,61 @@ to use random forest because we do not want to use all the predictors.If
 a really strong predictor exists, every bootstrap tree will probably use
 it for the first split and it will make the prediction more correlated.
 
-``` r
-ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
-             data=ed_train,
-             method="rf", 
-             metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
-             preProcess=c("center","scale"),
-             tuneGrid=data.frame(mtry=c(5:7))
-)
-ed_rf
-```
+    ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
+                 data=ed_train,
+                 method="rf", 
+                 metric="logLoss",
+                 trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+                 preProcess=c("center","scale"),
+                 tuneGrid=data.frame(mtry=c(5:7))
+    )
+    ed_rf
 
-## Fifth method: loess method
+## Fifth method: rotation forest method
 
-new method by Erich
+The rotation forest method is similar to the random forest method in
+that multiple models are brought to bear – each having different numbers
+and combinations of predictors – and the resulting set of predicted
+values are then averaged across models (or, in the case of a categorical
+outcome, the most prevalent classification across models is determined).
+Unlike the random forest method, however, the rotation forest method
+first extracts principal components from the various sets of predictor
+variables that are considered, and enters the principal components as
+predictors (as opposed to directly entering the original predictor
+variables as is done when using random forest). In more general terms,
+the rotation forest method is essentially a twist on the random forest
+method whereby principal component regression (or, principal component
+classification) is employed. As such, the rotation forest method is
+particularly well-suited for dealing with any multi-collinearity that
+may exist among the predictors. When training our model, we will use the
+default number of variable subsets (i.e. the number of subsets that
+results in 3 features per subset), and the default number of base
+classifiers (i.e. 10).
 
-``` r
-ed_loess <- train(Diabetes_binary_f ~ ., data = ed_train,
-  method = "gamLoess",
-  metric="logLoss",
-  preProcess = c("center", "scale"),
-  trControl = trainControl(method = "cv", number = 5, 
-                           classProbs = TRUE, summaryFunction = mnLogLoss),
-  tuneGrid = expand.grid(span = seq(0.5, 0.9, len = 5), degree = 1))
-#tuning parameters as currently shown are borrowed from https://www.statology.org/loess-regression-in-r/
+    ed_rot <- train(Diabetes_binary_f ~ ., data = ed_train,
+      method = "rotationForest",
+      metric="logLoss",
+      preProcess = c("center", "scale"),
+      trControl = trainControl(method = "cv", number = 5, 
+                               classProbs = TRUE, summaryFunction = mnLogLoss))
 
-ed_loess
-```
+    ed_rot
 
 ## Sixth method: Bayesian Generalized Linear Model
 
-``` r
-ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
-             method="bayesglm", 
-             metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
-             preProcess=c("center","scale")
-)
-ed_bglm
-```
+The generalized linear model (GLM) is an approach incorporating various
+probability distributions into a fitting procedure to describe
+variability. A GLM with Bayesian inference is often used to avoid over
+fitting. A Bayesian GLM can flexibly integrate various probability
+distributions as model residuals and parameter uncertainty.
+
+    ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
+                 method="bayesglm", 
+                 metric="logLoss",
+                 trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+                 preProcess=c("center","scale")
+    )
+    ed_bglm
 
     ## Bayesian Generalized Linear Model 
     ## 
@@ -859,49 +827,72 @@ ed_bglm
 
 # Final Model Selection
 
-You should now have six best models (one for each model type above)
+We have six best models (one for each model type above). Now compare all
+six models on the test set and declare an overall winner!
 
-``` r
-# Method 1
-a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
-ifelse(a!=3,
-       ifelse(a==1,
-              CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic1,newdata = ed_test)),
-              CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic2,newdata = ed_test))
-              ),
-       CM1<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_logistic3,newdata = ed_test))
-  )
-(CM1<-CM1$overall[1])
-# Method 2
-CM2<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_lasso,newdata = ed_test))
-# Method 3
-CM3<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_ct,newdata = ed_test))
-# Method 4
-CM4<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_rf,newdata = ed_test))
-(CM<-CM4$overall[1])
-# Method 5
-CM5<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_loess,newdata = ed_test))
-# Method 6
-CM6<-confusionMatrix(data = ed_test$Diabetes_binary_f,predict(ed_bglm,newdata = ed_test))
-(CM6<-CM6$overall[1])
+    # set a function to output logLoss value from each model by the test set
+    choose <- function(in_model)
+    {
+    pred <- predict(in_model, ed_test)
+    pred <- ifelse(pred=="no",0,1)
+    #as.data.frame is used here to avoid error as illustrated here: #https://www.statology.org/r-error-operator-is-invalid-for-atomic-vectors/
+    logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
+    }
 
-CM<-c(CM1,CM2,CM3,CM4,CM5,CM6)
-paste0("mode",c("1","2","3","4","5","6")[which.max(CM)]," is the best model")
-```
+    ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
 
-``` r
-choose <- function(in_model)
-{
-pred <- predict(in_model, ed_test)
-pred <- ifelse(pred=="no",0,1)
-#as.data.frame is used here to avoid error as illustrated here: #https://www.statology.org/r-error-operator-is-invalid-for-atomic-vectors/
-logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
-}
-```
+    # Method 1
+    # only output the best from method 1
+    a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
+    ifelse(a!=3,
+           ifelse(a==1,
+                  CM1<-choose(in_model = ed_logistic1),
+                  CM1<-choose(in_model = ed_logistic2)
+                  ),
+           CM1<-choose(in_model = ed_logistic3)
+      )
 
-``` r
-ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
-choose(in_model = ed_logistic1)
-```
+    ## [1] 5.930178
 
-    ## [1] 6.078787
+    paste0("logistic has a logLoss of ",CM1)
+
+    ## [1] "logistic has a logLoss of 5.930177918362"
+
+    # Method 2
+    CM2<-choose(in_model = ed_lasso)
+    paste0("lasso has a logLoss of ",CM2)
+
+    ## [1] "lasso has a logLoss of 5.92834300678158"
+
+    # Method 3
+    CM3<-choose(in_model = ed_ct)
+    paste0("classification tree has a logLoss of ",CM3)
+
+    ## [1] "classification tree has a logLoss of 5.94484846062972"
+
+    # Method 4
+    #CM4<-choose(in_model = ed_rf)
+    #paste0("random forests has a logLoss of ",CM4)
+
+    # Method 5
+    CM5<-choose(in_model = ed_rot)
+    paste0("rotation forests has a logLoss of ",CM5)
+
+    ## [1] "rotation forests has a logLoss of 6.08978956941716"
+
+    # Method 6
+    CM6<-choose(in_model = ed_bglm)
+    paste0("glm has a logLoss of ",CM6)
+
+    ## [1] "glm has a logLoss of 5.93201274498732"
+
+## Final conclusion
+
+    CM<-c(CM1,CM2,CM3,#CM4,
+          CM5,CM6)
+    paste0("model ",c("1","2","3",#"4",
+                    "5","6")[which.min(CM)]," is the best model")
+
+    ## [1] "model 2 is the best model"
+
+End report!

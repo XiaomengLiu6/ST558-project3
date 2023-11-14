@@ -10,14 +10,25 @@
 #process of creating the five separate analysis simple to do.
 
 #• a list of R packages used
-#readr
-#dplyr
-#ggplot2
-#corrplot
-#caret
-#ModelMetrics
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(corrplot)
+library(caret)
+library(ModelMetrics)
 
 #• the code used to create the analyses from a single .Rmd file (i.e. the render() code)
+
+ed_levels <- c("2","3","4","5","6")
+output_file <- paste0("ed_level_eq_",ed_levels,".md")
+params = lapply(ed_levels, FUN = function(x){list(ed_level = x)})
+reports <- tibble(output_file, params)
+
+library(rmarkdown)
+apply(reports, MARGIN = 1,
+      FUN = function(x){
+        render(input = "project3.Rmd", output_file = x[[1]], params = x[[2]])
+      })
 
 #• links to .html files of the generated analyses (which will be created by github pages! Not you!) For example,
 #– Analysis for [College Graduates](college_graduate_analysis.html). Note you should only
