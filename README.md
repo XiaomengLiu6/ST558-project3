@@ -30,8 +30,13 @@ apply(reports, MARGIN = 1,
       })
 ```
 The specific links for each education level to .html files of the generated analyses:
-Education level 1 and 2 [ed_level_eq_2.md](ed_level_eq_2.html)
-Education level 3 [ed_level_eq_3.md](ed_level_eq_3.html)
-Education level 4 [ed_level_eq_4.md](ed_level_eq_4.html)
-Education level 5 [ed_level_eq_5.md](ed_level_eq_5.html)
-Education level 6 [ed_level_eq_6.md](ed_level_eq_6.html)
+
+Report for Education level 1 and 2 [ed_level_eq_2.md](ed_level_eq_2.html)
+
+Report for Education level 3 [ed_level_eq_3.md](ed_level_eq_3.html)
+
+Report for Education level 4 [ed_level_eq_4.md](ed_level_eq_4.html)
+
+Report for Education level 5 [ed_level_eq_5.md](ed_level_eq_5.html)
+
+Report for Education level 6 [ed_level_eq_6.md](ed_level_eq_6.html)
