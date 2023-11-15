@@ -1,12 +1,9 @@
 ---
 title: "project3"
-author: "Xiaomeng Liu"
+author: "Xiaomeng Liu and Erich Lauff"
 date: "2023-11-05"
-output:
-  github_document:
-    toc: true
-    toc_depth: 3
-    number_sections: false
+output: github_document
+
 params:
   ed_level: "4"
 ---
@@ -14,6 +11,10 @@ params:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+    toc: true
+    toc_depth: 3
+    number_sections: false
 
 ```{r}
 name<-c("grade K through 8","grade 9 through 11","a high school credential","some college or technical school","bachelors degree or higher")

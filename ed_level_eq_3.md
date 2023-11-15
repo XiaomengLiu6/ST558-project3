@@ -1,6 +1,17 @@
-    paste0("This is the automated generated md file for the education level ",params$ed_level)
+    toc: true
+    toc_depth: 3
+    number_sections: false
 
-    ## [1] "This is the automated generated md file for the education level 3"
+    name<-c("grade K through 8","grade 9 through 11","a high school credential","some college or technical school","bachelors degree or higher")
+    paste0("This is the automated generated md file for the education level ",params$ed_level,",which means that the highest level of education is ",name[as.numeric(params$ed_level)])
+
+    ## [1] "This is the automated generated md file for the education level 3,which means that the highest level of education is a high school credential"
+
+    #education level 2:  highest level of education is grade K through 8
+    #education level 3:  highest level of education is grade 9 through 11
+    #education level 4:  highest level of education is a high school credential
+    #education level 5:  highest level of education is "some college" or technical school
+    #education level 6:  highest level of education is bachelors degree or higher
 
 # Goal
 
@@ -26,11 +37,6 @@ All the libraries used in this file are included here.
     library(rotationForest)
 
 # Introduction section
-
-This is the section that we briefly describes the data and the variables
-you have to work with (just discuss the ones we use in our analysis),
-and describes the purpose of our EDA and modeling, along with the end
-result we would be creating.
 
 The analyses presented here are based on the Diabetes Health Indicators
 Dataset, made available by kaggle.com at
@@ -154,11 +160,6 @@ variables into R factors.
     temp <- subset(diabetes, Education==params$ed_level)
 
 # Summarizations
-
-We produce some basic (but meaningful) summary statistics and plots
-about the data we are working with (especially as it relates to our
-response). We did our EDA on the full (subsetted to a single Education
-level) data.
 
 Prior to modelling our data, we will first conduct an exploratory data
 analysis (EDA). Our EDA will begin by confirming that we are working
@@ -978,18 +979,21 @@ distributions as model residuals and parameter uncertainty.
 
 # Final Model Selection
 
-We have six best models (one for each model type above). Now compare all
-six models on the test set and declare an overall winner!
+Lastly, we generate a log loss statistic for each of the six
+models/methods above by applying each one to our test data; after doing
+so, we identify a “best” model as the one with lowest log loss
+statistic.
 
     # set a function to output logLoss value from each model by the test set
     choose <- function(in_model)
     {
-    pred <- predict(in_model, ed_test)
-    pred <- ifelse(pred=="no",0,1)
-    #as.data.frame is used here to avoid error as illustrated here: #https://www.statology.org/r-error-operator-is-invalid-for-atomic-vectors/
+    pred <- predict(in_model, ed_test) #logLoss() requires a vector
+    pred <- ifelse(pred=="no",0,1) # it has to be numerical
+
     logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
     }
 
+    # make the variable numerical to work in logLoss function
     ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
 
     # Method 1
@@ -1039,11 +1043,12 @@ six models on the test set and declare an overall winner!
 
 ## Final conclusion
 
+The fit with the smallest logLoss value would be selected as the final
+model.
+
     CM<-c(CM1,CM2,CM3,#CM4,
           CM5,CM6)
     paste0("model ",c("1","2","3",#"4",
                     "5","6")[which.min(CM)]," is the best model")
 
     ## [1] "model 3 is the best model"
-
-End report!

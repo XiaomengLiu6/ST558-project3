@@ -1,6 +1,17 @@
-    paste0("This is the automated generated md file for the education level ",params$ed_level)
+    toc: true
+    toc_depth: 3
+    number_sections: false
 
-    ## [1] "This is the automated generated md file for the education level 2"
+    name<-c("grade K through 8","grade 9 through 11","a high school credential","some college or technical school","bachelors degree or higher")
+    paste0("This is the automated generated md file for the education level ",params$ed_level,",which means that the highest level of education is ",name[as.numeric(params$ed_level)])
+
+    ## [1] "This is the automated generated md file for the education level 2,which means that the highest level of education is grade 9 through 11"
+
+    #education level 2:  highest level of education is grade K through 8
+    #education level 3:  highest level of education is grade 9 through 11
+    #education level 4:  highest level of education is a high school credential
+    #education level 5:  highest level of education is "some college" or technical school
+    #education level 6:  highest level of education is bachelors degree or higher
 
 # Goal
 
@@ -25,12 +36,9 @@ All the libraries used in this file are included here.
     library(ModelMetrics)
     library(rotationForest)
 
-# Introduction section
+    ## Warning: package 'rotationForest' was built under R version 4.3.2
 
-This is the section that we briefly describes the data and the variables
-you have to work with (just discuss the ones we use in our analysis),
-and describes the purpose of our EDA and modeling, along with the end
-result we would be creating.
+# Introduction section
 
 The analyses presented here are based on the Diabetes Health Indicators
 Dataset, made available by kaggle.com at
@@ -155,11 +163,6 @@ variables into R factors.
 
 # Summarizations
 
-We produce some basic (but meaningful) summary statistics and plots
-about the data we are working with (especially as it relates to our
-response). We did our EDA on the full (subsetted to a single Education
-level) data.
-
 Prior to modelling our data, we will first conduct an exploratory data
 analysis (EDA). Our EDA will begin by confirming that we are working
 with the desired set of cases, i.e. the set of cases corresponding to a
@@ -176,7 +179,7 @@ single level of the categorical “education” measure.
       geom_dotplot(binwidth = .05, method = "histodot") + 
       labs(title = "confirm that we're working with the desired set of cases")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-70-1.png) A
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-8-1.png) A
 basic structure of the data set is shown below. Numerical summaries were
 made for the numerical variables. This would help us to understand more
 about the numerical variables.
@@ -284,7 +287,7 @@ each of these plots.
     ## 1 0                0.154
     ## 2 1                0.388
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-1.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-1.png)
 
     explore(by_var = HighChol_f)
 
@@ -294,7 +297,7 @@ each of these plots.
     ## 1 0                  0.180
     ## 2 1                  0.389
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-2.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-2.png)
 
     explore(by_var = CholCheck_f)
 
@@ -304,7 +307,7 @@ each of these plots.
     ## 1 0                  0.0672
     ## 2 1                  0.298
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-3.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-3.png)
 
     explore(by_var = Smoker_f)
 
@@ -314,7 +317,7 @@ each of these plots.
     ## 1 0                0.281
     ## 2 1                0.303
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-4.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-4.png)
 
     explore(by_var = Stroke_f)
 
@@ -324,7 +327,7 @@ each of these plots.
     ## 1 0                0.280
     ## 2 1                0.417
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-5.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-5.png)
 
     explore(by_var = HeartDiseaseorAttack_f)
 
@@ -334,7 +337,7 @@ each of these plots.
     ## 1 0                              0.250
     ## 2 1                              0.467
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-6.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-6.png)
 
     explore(by_var = PhysActivity_f)
 
@@ -344,7 +347,7 @@ each of these plots.
     ## 1 0                      0.325
     ## 2 1                      0.267
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-7.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-7.png)
 
     explore(by_var = Fruits_f)
 
@@ -354,7 +357,7 @@ each of these plots.
     ## 1 0                0.301
     ## 2 1                0.285
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-8.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-8.png)
 
     explore(by_var = Veggies_f)
 
@@ -364,7 +367,7 @@ each of these plots.
     ## 1 0                 0.314
     ## 2 1                 0.282
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-9.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-9.png)
 
     explore(by_var = HvyAlcoholConsump_f)
 
@@ -374,7 +377,7 @@ each of these plots.
     ## 1 0                           0.296
     ## 2 1                           0.116
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-10.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-10.png)
 
     explore(by_var = AnyHealthcare_f)
 
@@ -384,7 +387,7 @@ each of these plots.
     ## 1 0                       0.188
     ## 2 1                       0.311
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-11.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-11.png)
 
     explore(by_var = NoDocbcCost_f)
 
@@ -394,7 +397,7 @@ each of these plots.
     ## 1 0                     0.292
     ## 2 1                     0.292
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-12.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-12.png)
 
     explore(by_var = GenHlth_f)
 
@@ -407,7 +410,7 @@ each of these plots.
     ## 4 4                 0.356
     ## 5 5                 0.474
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-13.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-13.png)
 
     explore(by_var = DiffWalk_f)
 
@@ -417,7 +420,7 @@ each of these plots.
     ## 1 0                  0.220
     ## 2 1                  0.409
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-14.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-14.png)
 
     explore(by_var = Sex_f)
 
@@ -427,7 +430,7 @@ each of these plots.
     ## 1 0             0.310
     ## 2 1             0.270
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-15.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-15.png)
 
     explore(by_var = Age_f)
 
@@ -448,7 +451,7 @@ each of these plots.
     ## 12 12           0.361 
     ## 13 13           0.287
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-16.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-16.png)
 
     explore(by_var = Income_f)
 
@@ -464,7 +467,7 @@ each of these plots.
     ## 7 7                0.166
     ## 8 8                0.161
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-17.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-17.png)
 
     #correlation matrix (outcome var x continuous vars)
     corr_vars <-
@@ -473,7 +476,7 @@ each of these plots.
     corrplot(correlation, type = "upper", tl.pos = "lt")
     corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-18.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-18.png)
 
     #density plots / boxplots (outcome var x continuous vars)
     #I'm guessing we could just choose one or the other
@@ -481,29 +484,29 @@ each of these plots.
       geom_density(adjust = 0.5, alpha = 0.5) +
       labs(title = "BMI, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-19.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-19.png)
 
     ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot() +
       labs(title = "BMI, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-20.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-20.png)
 
     ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
       geom_density(adjust = 0.5, alpha = 0.5) +
       labs(title = "Number of poor mental health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-21.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-21.png)
 
     ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot() +
       labs(title = "Number of poor mental health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-22.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-22.png)
 
     ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
       geom_density(adjust = 0.5, alpha = 0.5) +
       labs(title = "Number of poor physical health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-23.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-23.png)
 
     bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + 
       geom_boxplot() + 
@@ -978,18 +981,21 @@ distributions as model residuals and parameter uncertainty.
 
 # Final Model Selection
 
-We have six best models (one for each model type above). Now compare all
-six models on the test set and declare an overall winner!
+Lastly, we generate a log loss statistic for each of the six
+models/methods above by applying each one to our test data; after doing
+so, we identify a “best” model as the one with lowest log loss
+statistic.
 
     # set a function to output logLoss value from each model by the test set
     choose <- function(in_model)
     {
-    pred <- predict(in_model, ed_test)
-    pred <- ifelse(pred=="no",0,1)
-    #as.data.frame is used here to avoid error as illustrated here: #https://www.statology.org/r-error-operator-is-invalid-for-atomic-vectors/
+    pred <- predict(in_model, ed_test) #logLoss() requires a vector
+    pred <- ifelse(pred=="no",0,1) # it has to be numerical
+
     logLoss(actual = ed_test$Diabetes_binary_f, predicted = pred)
     }
 
+    # make the variable numerical to work in logLoss function
     ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
 
     # Method 1
@@ -1039,11 +1045,12 @@ six models on the test set and declare an overall winner!
 
 ## Final conclusion
 
+The fit with the smallest logLoss value would be selected as the final
+model.
+
     CM<-c(CM1,CM2,CM3,#CM4,
           CM5,CM6)
     paste0("model ",c("1","2","3",#"4",
                     "5","6")[which.min(CM)]," is the best model")
 
     ## [1] "model 6 is the best model"
-
-End report!
