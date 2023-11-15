@@ -1,17 +1,10 @@
-    toc: true
-    toc_depth: 3
-    number_sections: false
-
-    name<-c("grade K through 8","grade 9 through 11","a high school credential","some college or technical school","bachelors degree or higher")
-    paste0("This is the automated generated md file for the education level ",params$ed_level,",which means that the highest level of education is ",name[as.numeric(params$ed_level)])
+    name<-c("grade K through 8","grade 9 through 11","a high school credential",
+            "some college or technical school","bachelors degree or higher")
+    paste0("This is the automated generated md file for the education level ",
+           params$ed_level,",which means that the highest level of education is ",
+           name[as.numeric(params$ed_level)])
 
     ## [1] "This is the automated generated md file for the education level 3,which means that the highest level of education is a high school credential"
-
-    #education level 2:  highest level of education is grade K through 8
-    #education level 3:  highest level of education is grade 9 through 11
-    #education level 4:  highest level of education is a high school credential
-    #education level 5:  highest level of education is "some college" or technical school
-    #education level 6:  highest level of education is bachelors degree or higher
 
 # Goal
 
@@ -130,7 +123,9 @@ variables into R factors.
 ### Convert variables to factors
 
     #create factor version of variables, where applicable
-    #in order to facilitate the EDA, for now at least, we'll retain both the factor version and the numeric version of each variable (we may need to drop one version, though, before running models)
+    #in order to facilitate the EDA, for now at least, we'll retain both the factor 
+    #version and the numeric version of each variable (we may need to drop one 
+    #version, though, before running models)
     diabetes$Diabetes_binary_f   <- as.factor(diabetes$Diabetes_binary)
     diabetes$HighBP_f    <- as.factor(diabetes$HighBP)
     diabetes$HighChol_f  <- as.factor(diabetes$HighChol)
@@ -260,14 +255,15 @@ matrix). We also generate density plots and boxplots for each continuous
 predictor using the dichotomous outcome measure as a “by” variable for
 each of these plots.
 
-    #function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
+    #function to check prevalence of diabetes at each level of each factor, 
+    #and generate corresponding plots
     explore <- function(by_var)
     {
     results1 <- temp %>%
       group_by({{by_var}}) %>%
       summarize(diabetes_rate = mean(Diabetes_binary))
         #passing variable names to function using curly brackets:
-        #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
+    #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
     print(results1)
 
     results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
@@ -276,7 +272,8 @@ each of these plots.
     print(results2)
     }
 
-    #probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
+    #probably need to run the above function for at least the sex, age, and income 
+    #variables, but may not need to run it for this entire list
     explore(by_var = HighBP_f)
 
     ## # A tibble: 2 × 2
@@ -472,7 +469,8 @@ each of these plots.
       temp %>% select(c(Diabetes_binary, BMI, MentHlth, PhysHlth))
     correlation <- cor(corr_vars, method = "spearman")
     corrplot(correlation, type = "upper", tl.pos = "lt")
-    corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
+    corrplot(correlation, type = "lower", method = "number", add = TRUE, 
+             diag = FALSE, tl.pos = "n")
 
 ![](ed_level_eq_3_files/figure-markdown_strict/unnamed-chunk-10-18.png)
 
@@ -522,8 +520,11 @@ and provide explanations.
 We made a data cleaning so that the model fitting methods would work
 better.
 
-    #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
-    #we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
+    #prior to running models, in instances where we have both a factor and 
+    #a non-factor version of a given variable, we need to first drop the non-factor 
+    #version of the variable.
+    #we also need to drop both versions of the education variable (since it will not
+    #vary given that we've subset our data to a specific education level)
     temp$Diabetes_binary     <- NULL 
     temp$HighBP  <- NULL
     temp$HighChol    <- NULL
@@ -607,7 +608,8 @@ for fitting a logistic regression mode.
     ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
                  method="glm", 
                  metric="logLoss",
-                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, 
+                                        summaryFunction = mnLogLoss),
                  preProcess=c("center","scale")
     )
     ed_logistic1
@@ -626,10 +628,12 @@ for fitting a logistic regression mode.
     ##   logLoss  
     ##   0.4951938
 
-    ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=ed_train,
+    ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+
+                          PhysActivity_f,data=ed_train,
                  method="glm", 
                  metric="logLoss",
-                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, 
+                                        summaryFunction = mnLogLoss),
                  preProcess=c("center","scale")
     )
     ed_logistic2
@@ -651,7 +655,8 @@ for fitting a logistic regression mode.
     ed_logistic3<-train(Diabetes_binary_f~.,data=ed_train,
                  method="glm", 
                  metric="logLoss",
-                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+                 trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, 
+                                        summaryFunction = mnLogLoss),
                  preProcess=c("center","scale")
     )
     ed_logistic3
@@ -671,7 +676,8 @@ for fitting a logistic regression mode.
     ##   0.4719314
 
     # return the result
-    paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))])
+    paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],
+                              ed_logistic3$results[2]))])
 
     ## [1] "According to the results, the lowest logLoss is the model 3"
 
@@ -882,15 +888,35 @@ predictors.If a really strong predictor exists, every bootstrap tree
 will probably use it for the first split and it will make the prediction
 more correlated.
 
-    ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
+    ed_rf<-train(Diabetes_binary_f~.,
                  data=ed_train,
                  method="rf", 
                  metric="logLoss",
-                 trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+                 trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, 
+                                        summaryFunction=mnLogLoss),
                  preProcess=c("center","scale"),
                  tuneGrid=data.frame(mtry=c(5:7))
     )
     ed_rf
+
+    ## Random Forest 
+    ## 
+    ## 6636 samples
+    ##   20 predictor
+    ##    2 classes: 'no', 'yes' 
+    ## 
+    ## Pre-processing: centered (40), scaled (40) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 5310, 5308, 5309, 5308, 5309 
+    ## Resampling results across tuning parameters:
+    ## 
+    ##   mtry  logLoss  
+    ##   5     0.4811821
+    ##   6     0.4823903
+    ##   7     0.4844506
+    ## 
+    ## logLoss was used to select the optimal model using the smallest value.
+    ## The final value used for the model was mtry = 5.
 
 ## Fifth method: rotation forest method
 
@@ -930,22 +956,22 @@ classifiers (i.e. 10).
     ## 
     ## Pre-processing: centered (40), scaled (40) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5310, 5308, 5309, 5308, 5309 
+    ## Summary of sample sizes: 5309, 5309, 5309, 5308, 5309 
     ## Resampling results across tuning parameters:
     ## 
     ##   K  L  logLoss  
-    ##   1  3  0.5047363
-    ##   1  6  0.5038594
-    ##   1  9  0.5054596
-    ##   2  3  0.5092055
-    ##   2  6  0.5040184
-    ##   2  9  0.5042225
-    ##   4  3  0.5123368
-    ##   4  6  0.5119857
-    ##   4  9  0.5102691
+    ##   1  3  0.5063080
+    ##   1  6  0.5035840
+    ##   1  9  0.5031453
+    ##   2  3  0.5039212
+    ##   2  6  0.5010824
+    ##   2  9  0.5006250
+    ##   4  3  0.5074294
+    ##   4  6  0.5049547
+    ##   4  9  0.5027550
     ## 
     ## logLoss was used to select the optimal model using the smallest value.
-    ## The final values used for the model were K = 1 and L = 6.
+    ## The final values used for the model were K = 2 and L = 9.
 
 ## Sixth method: Bayesian Generalized Linear Model
 
@@ -958,7 +984,8 @@ distributions as model residuals and parameter uncertainty.
     ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
                  method="bayesglm", 
                  metric="logLoss",
-                 trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+                 trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, 
+                                        summaryFunction=mnLogLoss),
                  preProcess=c("center","scale")
     )
     ed_bglm
@@ -971,11 +998,11 @@ distributions as model residuals and parameter uncertainty.
     ## 
     ## Pre-processing: centered (40), scaled (40) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 5310, 5308, 5309, 5308, 5309 
+    ## Summary of sample sizes: 5308, 5309, 5310, 5309, 5308 
     ## Resampling results:
     ## 
     ##   logLoss  
-    ##   0.4738172
+    ##   0.4728869
 
 # Final Model Selection
 
@@ -998,7 +1025,8 @@ statistic.
 
     # Method 1
     # only output the best from method 1
-    a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
+    a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],
+                                  ed_logistic3$results[2]))]
     ifelse(a!=3,
            ifelse(a==1,
                   CM1<-choose(in_model = ed_logistic1),
@@ -1026,14 +1054,16 @@ statistic.
     ## [1] "classification tree has a logLoss of 7.9723841223116"
 
     # Method 4
-    #CM4<-choose(in_model = ed_rf)
-    #paste0("random forests has a logLoss of ",CM4)
+    CM4<-choose(in_model = ed_rf)
+    paste0("random forests has a logLoss of ",CM4)
+
+    ## [1] "random forests has a logLoss of 8.1789853882892"
 
     # Method 5
     CM5<-choose(in_model = ed_rot)
     paste0("rotation forests has a logLoss of ",CM5)
 
-    ## [1] "rotation forests has a logLoss of 8.11820190644369"
+    ## [1] "rotation forests has a logLoss of 8.10604836119746"
 
     # Method 6
     CM6<-choose(in_model = ed_bglm)
@@ -1046,9 +1076,8 @@ statistic.
 The fit with the smallest logLoss value would be selected as the final
 model.
 
-    CM<-c(CM1,CM2,CM3,#CM4,
-          CM5,CM6)
-    paste0("model ",c("1","2","3",#"4",
+    CM<-c(CM1,CM2,CM3,CM4,CM5,CM6)
+    paste0("model ",c("1","2","3","4",
                     "5","6")[which.min(CM)]," is the best model")
 
     ## [1] "model 3 is the best model"

@@ -2,8 +2,11 @@
 title: "project3"
 author: "Xiaomeng Liu and Erich Lauff"
 date: "2023-11-05"
-output: github_document
-
+output: 
+  github_document:
+    toc: true
+    toc_depth: 3
+    number_sections: false
 params:
   ed_level: "4"
 ---
@@ -12,19 +15,14 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-    toc: true
-    toc_depth: 3
-    number_sections: false
+
 
 ```{r}
-name<-c("grade K through 8","grade 9 through 11","a high school credential","some college or technical school","bachelors degree or higher")
-paste0("This is the automated generated md file for the education level ",params$ed_level,",which means that the highest level of education is ",name[as.numeric(params$ed_level)])
-#education level 2:  highest level of education is grade K through 8
-#education level 3:  highest level of education is grade 9 through 11
-#education level 4:  highest level of education is a high school credential
-#education level 5:  highest level of education is "some college" or technical school
-#education level 6:  highest level of education is bachelors degree or higher
-
+name<-c("grade K through 8","grade 9 through 11","a high school credential",
+        "some college or technical school","bachelors degree or higher")
+paste0("This is the automated generated md file for the education level ",
+       params$ed_level,",which means that the highest level of education is ",
+       name[as.numeric(params$ed_level)])
 ```
 
 # Goal
@@ -121,7 +119,9 @@ table(diabetes$Education)
 ### Convert variables to factors
 ```{r}
 #create factor version of variables, where applicable
-#in order to facilitate the EDA, for now at least, we'll retain both the factor version and the numeric version of each variable (we may need to drop one version, though, before running models)
+#in order to facilitate the EDA, for now at least, we'll retain both the factor 
+#version and the numeric version of each variable (we may need to drop one 
+#version, though, before running models)
 diabetes$Diabetes_binary_f	 <- as.factor(diabetes$Diabetes_binary)
 diabetes$HighBP_f	 <- as.factor(diabetes$HighBP)
 diabetes$HighChol_f	 <- as.factor(diabetes$HighChol)
@@ -182,14 +182,15 @@ After confirming correct data subsetting, for each factor variable in the datase
 For continuous predictor variables, we have generated a correlation matrix (the outcome of interest is also included in this correlation matrix).  We also generate density plots and boxplots for each continuous predictor using the dichotomous outcome measure as a "by" variable for each of these plots.
 
 ```{r}
-#function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
+#function to check prevalence of diabetes at each level of each factor, 
+#and generate corresponding plots
 explore <- function(by_var)
 {
 results1 <- temp %>%
   group_by({{by_var}}) %>%
   summarize(diabetes_rate = mean(Diabetes_binary))
     #passing variable names to function using curly brackets:
-    #https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
+#https://stackoverflow.com/questions/63433728/how-do-i-pass-a-variable-name-to-an-argument-in-a-function
 print(results1)
 
 results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
@@ -198,7 +199,8 @@ results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) +
 print(results2)
 }
 
-#probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
+#probably need to run the above function for at least the sex, age, and income 
+#variables, but may not need to run it for this entire list
 explore(by_var = HighBP_f)
 explore(by_var = HighChol_f)
 explore(by_var = CholCheck_f)
@@ -224,7 +226,8 @@ corr_vars <-
   temp %>% select(c(Diabetes_binary, BMI, MentHlth, PhysHlth))
 correlation <- cor(corr_vars, method = "spearman")
 corrplot(correlation, type = "upper", tl.pos = "lt")
-corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
+corrplot(correlation, type = "lower", method = "number", add = TRUE, 
+         diag = FALSE, tl.pos = "n")
 
 
 
@@ -261,8 +264,11 @@ We did some data cleaning and split the data into a training (70% of the data) a
 We made a data cleaning so that the model fitting methods would work better.
 
 ```{r}
-#prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
-#we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
+#prior to running models, in instances where we have both a factor and 
+#a non-factor version of a given variable, we need to first drop the non-factor 
+#version of the variable.
+#we also need to drop both versions of the education variable (since it will not
+#vary given that we've subset our data to a specific education level)
 temp$Diabetes_binary	 <- NULL 
 temp$HighBP	 <- NULL
 temp$HighChol	 <- NULL
@@ -334,16 +340,19 @@ a logistic regression mode.
 ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
              method="glm", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, 
+                                    summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
 ed_logistic1
 ```
 ```{r}
-ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+PhysActivity_f,data=ed_train,
+ed_logistic2<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f+MentHlth+
+                      PhysActivity_f,data=ed_train,
              method="glm", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, 
+                                    summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
 ed_logistic2
@@ -352,14 +361,16 @@ ed_logistic2
 ed_logistic3<-train(Diabetes_binary_f~.,data=ed_train,
              method="glm", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, summaryFunction = mnLogLoss),
+             trControl=trainControl(method = "cv",number = 5,classProbs = TRUE, 
+                                    summaryFunction = mnLogLoss),
              preProcess=c("center","scale")
 )
 ed_logistic3
 ```
 ```{r}
 # return the result
-paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))])
+paste0("According to the results, the lowest logLoss is the model ", c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],
+                          ed_logistic3$results[2]))])
 ```
 
 ## Second method: Lasso logistic
@@ -395,7 +406,7 @@ ed_ct <- train(Diabetes_binary_f ~ ., data = ed_train,
 ed_ct
 ```
 
-## Fourth method: Random forest
+## Fourth method: Random forest 
 
 ### Explanation of the random forest:
 The random forest uses the same idea as bagging. It creates multiple trees from bootstrap samples and averages results. It uses a random subset of predictors for each bootstrap sample fit. 
@@ -403,12 +414,13 @@ The random forest uses the same idea as bagging. It creates multiple trees from 
 ### why we might use it instead of a basic classification tree:
 We want to use random forest because we do not want to use all the predictors.If a really strong predictor exists, every bootstrap tree will probably use it for the first split and it will make the prediction more correlated.
 
-```{r,eval=FALSE}
-ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
+```{r}
+ed_rf<-train(Diabetes_binary_f~.,
              data=ed_train,
              method="rf", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, 
+                                    summaryFunction=mnLogLoss),
              preProcess=c("center","scale"),
              tuneGrid=data.frame(mtry=c(5:7))
 )
@@ -438,7 +450,8 @@ The generalized linear model (GLM) is an approach incorporating various probabil
 ed_bglm<-train(Diabetes_binary_f~.,data=ed_train,
              method="bayesglm", 
              metric="logLoss",
-             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, summaryFunction=mnLogLoss),
+             trControl=trainControl(method = "cv",number = 5, classProbs=TRUE, 
+                                    summaryFunction=mnLogLoss),
              preProcess=c("center","scale")
 )
 ed_bglm
@@ -466,7 +479,8 @@ ed_test$Diabetes_binary_f<-ifelse(ed_test$Diabetes_binary_f=="no",0,1)
 
 # Method 1
 # only output the best from method 1
-a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],ed_logistic3$results[2]))]
+a<-c("1","2","3")[which.min(c(ed_logistic1$results[2],ed_logistic2$results[2],
+                              ed_logistic3$results[2]))]
 ifelse(a!=3,
        ifelse(a==1,
               CM1<-choose(in_model = ed_logistic1),
@@ -485,8 +499,8 @@ CM3<-choose(in_model = ed_ct)
 paste0("classification tree has a logLoss of ",CM3)
 
 # Method 4
-#CM4<-choose(in_model = ed_rf)
-#paste0("random forests has a logLoss of ",CM4)
+CM4<-choose(in_model = ed_rf)
+paste0("random forests has a logLoss of ",CM4)
 
 # Method 5
 CM5<-choose(in_model = ed_rot)
@@ -501,8 +515,7 @@ paste0("glm has a logLoss of ",CM6)
 The fit with the smallest logLoss value would be selected as the final model.
 
 ```{r}
-CM<-c(CM1,CM2,CM3,#CM4,
-      CM5,CM6)
-paste0("model ",c("1","2","3",#"4",
+CM<-c(CM1,CM2,CM3,CM4,CM5,CM6)
+paste0("model ",c("1","2","3","4",
                 "5","6")[which.min(CM)]," is the best model")
 ```
