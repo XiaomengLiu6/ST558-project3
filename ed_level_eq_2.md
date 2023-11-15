@@ -2,9 +2,9 @@
             "some college or technical school","bachelors degree or higher")
     paste0("This is the automated generated md file for the education level ",
            params$ed_level,",which means that the highest level of education is ",
-           name[as.numeric(params$ed_level)])
+           name[as.numeric(params$ed_level)-1])
 
-    ## [1] "This is the automated generated md file for the education level 2,which means that the highest level of education is grade 9 through 11"
+    ## [1] "This is the automated generated md file for the education level 2,which means that the highest level of education is grade K through 8"
 
 # Goal
 
@@ -172,7 +172,7 @@ single level of the categorical “education” measure.
       geom_dotplot(binwidth = .05, method = "histodot") + 
       labs(title = "confirm that we're working with the desired set of cases")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-8-1.png) A
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-9-1.png) A
 basic structure of the data set is shown below. Numerical summaries were
 made for the numerical variables. This would help us to understand more
 about the numerical variables.
@@ -282,7 +282,7 @@ each of these plots.
     ## 1 0                0.154
     ## 2 1                0.388
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-1.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-1.png)
 
     explore(by_var = HighChol_f)
 
@@ -292,7 +292,7 @@ each of these plots.
     ## 1 0                  0.180
     ## 2 1                  0.389
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-2.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-2.png)
 
     explore(by_var = CholCheck_f)
 
@@ -302,7 +302,7 @@ each of these plots.
     ## 1 0                  0.0672
     ## 2 1                  0.298
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-3.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-3.png)
 
     explore(by_var = Smoker_f)
 
@@ -312,7 +312,7 @@ each of these plots.
     ## 1 0                0.281
     ## 2 1                0.303
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-4.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-4.png)
 
     explore(by_var = Stroke_f)
 
@@ -322,7 +322,7 @@ each of these plots.
     ## 1 0                0.280
     ## 2 1                0.417
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-5.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-5.png)
 
     explore(by_var = HeartDiseaseorAttack_f)
 
@@ -332,7 +332,7 @@ each of these plots.
     ## 1 0                              0.250
     ## 2 1                              0.467
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-6.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-6.png)
 
     explore(by_var = PhysActivity_f)
 
@@ -342,7 +342,7 @@ each of these plots.
     ## 1 0                      0.325
     ## 2 1                      0.267
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-7.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-7.png)
 
     explore(by_var = Fruits_f)
 
@@ -352,7 +352,7 @@ each of these plots.
     ## 1 0                0.301
     ## 2 1                0.285
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-8.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-8.png)
 
     explore(by_var = Veggies_f)
 
@@ -362,7 +362,7 @@ each of these plots.
     ## 1 0                 0.314
     ## 2 1                 0.282
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-9.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-9.png)
 
     explore(by_var = HvyAlcoholConsump_f)
 
@@ -372,7 +372,7 @@ each of these plots.
     ## 1 0                           0.296
     ## 2 1                           0.116
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-10.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-10.png)
 
     explore(by_var = AnyHealthcare_f)
 
@@ -382,7 +382,7 @@ each of these plots.
     ## 1 0                       0.188
     ## 2 1                       0.311
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-11.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-11.png)
 
     explore(by_var = NoDocbcCost_f)
 
@@ -392,7 +392,7 @@ each of these plots.
     ## 1 0                     0.292
     ## 2 1                     0.292
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-12.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-12.png)
 
     explore(by_var = GenHlth_f)
 
@@ -405,7 +405,7 @@ each of these plots.
     ## 4 4                 0.356
     ## 5 5                 0.474
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-13.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-13.png)
 
     explore(by_var = DiffWalk_f)
 
@@ -415,7 +415,7 @@ each of these plots.
     ## 1 0                  0.220
     ## 2 1                  0.409
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-14.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-14.png)
 
     explore(by_var = Sex_f)
 
@@ -425,7 +425,7 @@ each of these plots.
     ## 1 0             0.310
     ## 2 1             0.270
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-15.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-15.png)
 
     explore(by_var = Age_f)
 
@@ -446,7 +446,7 @@ each of these plots.
     ## 12 12           0.361 
     ## 13 13           0.287
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-16.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-16.png)
 
     explore(by_var = Income_f)
 
@@ -462,7 +462,7 @@ each of these plots.
     ## 7 7                0.166
     ## 8 8                0.161
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-17.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-17.png)
 
     #correlation matrix (outcome var x continuous vars)
     corr_vars <-
@@ -472,7 +472,7 @@ each of these plots.
     corrplot(correlation, type = "lower", method = "number", add = TRUE, 
              diag = FALSE, tl.pos = "n")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-18.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-18.png)
 
     #density plots / boxplots (outcome var x continuous vars)
     #I'm guessing we could just choose one or the other
@@ -480,29 +480,29 @@ each of these plots.
       geom_density(adjust = 0.5, alpha = 0.5) +
       labs(title = "BMI, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-19.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-19.png)
 
     ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot() +
       labs(title = "BMI, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-20.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-20.png)
 
     ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
       geom_density(adjust = 0.5, alpha = 0.5) +
       labs(title = "Number of poor mental health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-21.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-21.png)
 
     ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot() +
       labs(title = "Number of poor mental health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-22.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-22.png)
 
     ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
       geom_density(adjust = 0.5, alpha = 0.5) +
       labs(title = "Number of poor physical health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-10-23.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-11-23.png)
 
     bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + 
       geom_boxplot() + 

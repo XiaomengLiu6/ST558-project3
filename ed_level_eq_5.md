@@ -2,9 +2,9 @@
             "some college or technical school","bachelors degree or higher")
     paste0("This is the automated generated md file for the education level ",
            params$ed_level,",which means that the highest level of education is ",
-           name[as.numeric(params$ed_level)])
+           name[as.numeric(params$ed_level)-1])
 
-    ## [1] "This is the automated generated md file for the education level 5,which means that the highest level of education is bachelors degree or higher"
+    ## [1] "This is the automated generated md file for the education level 5,which means that the highest level of education is some college or technical school"
 
 # Goal
 
