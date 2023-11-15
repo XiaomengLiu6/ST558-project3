@@ -6,7 +6,7 @@ The repo is about ST558 Project 3. We analyzed a Diabetes Health Indicator Datas
 for that analysis. We created render() code similar to the lecture to make the process of creating the five separate analysis simple to do.
 
 Here is a list of R packages used:
-
+```
 readr
 dplyr
 ggplot2
@@ -14,6 +14,7 @@ corrplot
 caret
 ModelMetrics
 rotationForest
+```
 
 This is the code used to create the analyses from a single .Rmd file (i.e. the render() code)
 ```
@@ -29,4 +30,4 @@ apply(reports, MARGIN = 1,
       })
 ```
 The links to .html files of the generated analyses:
-  https://xiaomengliu6.github.io/ST558-project3/
+Eample md document [is called ed_level_eq_2.md](ed_level_eq_2.html)
