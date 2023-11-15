@@ -7,16 +7,16 @@ for that analysis. We created render() code similar to the lecture to make the p
 
 Here is a list of R packages used:
 
-library(readr)
-library(dplyr)
-library(ggplot2)
-library(corrplot)
-library(caret)
-library(ModelMetrics)
-library(rotationForest)
+readr
+dplyr
+ggplot2
+corrplot
+caret
+ModelMetrics
+rotationForest
 
 This is the code used to create the analyses from a single .Rmd file (i.e. the render() code)
-
+```
 ed_levels <- c("2","3","4","5","6")
 output_file <- paste0("ed_level_eq_",ed_levels,".md")
 params = lapply(ed_levels, FUN = function(x){list(ed_level = x)})
@@ -27,6 +27,6 @@ apply(reports, MARGIN = 1,
       FUN = function(x){
         render(input = "project3.Rmd", output_file = x[[1]], params = x[[2]])
       })
-
+```
 The links to .html files of the generated analyses:
   https://xiaomengliu6.github.io/ST558-project3/
