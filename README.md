@@ -29,5 +29,9 @@ apply(reports, MARGIN = 1,
         render(input = "project3.Rmd", output_file = x[[1]], params = x[[2]])
       })
 ```
-The links to .html files of the generated analyses:
-Eample md document [is called ed_level_eq_2.md](ed_level_eq_2.html)
+The specific links for each education level to .html files of the generated analyses:
+Education level 1 and 2 [ed_level_eq_2.md](ed_level_eq_2.html)
+Education level 3 [ed_level_eq_3.md](ed_level_eq_3.html)
+Education level 4 [ed_level_eq_4.md](ed_level_eq_4.html)
+Education level 5 [ed_level_eq_5.md](ed_level_eq_5.html)
+Education level 6 [ed_level_eq_6.md](ed_level_eq_6.html)
