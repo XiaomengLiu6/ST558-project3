@@ -1,3 +1,7 @@
+    paste0("This is the automated generated md file for the education level ",params$ed_level)
+
+    ## [1] "This is the automated generated md file for the education level 2"
+
 # Goal
 
 We analyzed a Diabetes Health Indicator Dataset. We were doing a
@@ -19,6 +23,7 @@ All the libraries used in this file are included here.
     library(corrplot)
     library(caret)
     library(ModelMetrics)
+    library(rotationForest)
 
 # Introduction section
 
@@ -26,6 +31,25 @@ This is the section that we briefly describes the data and the variables
 you have to work with (just discuss the ones we use in our analysis),
 and describes the purpose of our EDA and modeling, along with the end
 result we would be creating.
+
+The analyses presented here are based on the Diabetes Health Indicators
+Dataset, made available by kaggle.com at
+<https://www.kaggle.com/datasets/alexteboul/diabetes-health-indicators-dataset/>.
+The specific dataset upon which this analysis is based
+(diabetes\_binary\_health\_indicators\_BRFSS2015.csv) is comprised of
+approximately 250,000 records, each having a dichotomous 0/1 indication
+of no diabetes vs. diabetes/pre-diabetes. In addition, the datafile
+contains roughly 20 feature variables of various types, including
+continuous (e.g. body mass index), categorical (e.g. education level),
+and dummy indicators (e.g. whether the patient has high blood pressure).
+
+The analytic approach taken here is to control for patients’ level of
+education by conducting a separate analysis (i.e. exploratory data
+analysis + predictive modelling) for each of five education levels: (1)
+8th grade or lower; (2) grade 9 through 11; (3) high school credential;
+(4) some college or technical school; and (5) bachelors degree or
+higher. The outcome measure of interest for all analyses will be the
+dichotomous diabetes indicator.
 
       #per https://www.cdc.gov/brfss/annual_data/2015/pdf/codebook15_llcp.pdf,
       #here are value meanings for the education variable:
@@ -77,9 +101,10 @@ result we would be creating.
 
 # Data
 
-Use a relative path to import the data. Subset the data to work on the
-Education level of interest. We convert a lot of the variables to
-factors with meaningful level names.
+Before conducting analyses, we will read in the csv datafile, collapse
+education levels of “Never attended school or only kindergarten” and
+“Grades 1 through 8” into a single category, and convert categorical
+variables into R factors.
 
 ### Read in the data
 
@@ -123,6 +148,7 @@ factors with meaningful level names.
     diabetes$Education_f     <- as.factor(diabetes$Education)
     diabetes$Income_f    <- as.factor(diabetes$Income)
 
+## subset to specific level of education per *params* setting
 
     #subset to specific level of education per *params* setting
     temp <- subset(diabetes, Education==params$ed_level)
@@ -133,6 +159,11 @@ We produce some basic (but meaningful) summary statistics and plots
 about the data we are working with (especially as it relates to our
 response). We did our EDA on the full (subsetted to a single Education
 level) data.
+
+Prior to modelling our data, we will first conduct an exploratory data
+analysis (EDA). Our EDA will begin by confirming that we are working
+with the desired set of cases, i.e. the set of cases corresponding to a
+single level of the categorical “education” measure.
 
     #confirm that we're working with the desired set of cases
     table(temp$Education, temp$Education_f)
@@ -145,10 +176,90 @@ level) data.
       geom_dotplot(binwidth = .05, method = "histodot") + 
       labs(title = "confirm that we're working with the desired set of cases")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-1.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-70-1.png) A
+basic structure of the data set is shown below. Numerical summaries were
+made for the numerical variables. This would help us to understand more
+about the numerical variables.
+
+    # basic structure of the data set
+    str(temp)
+
+    ## 'data.frame':    4217 obs. of  41 variables:
+    ##  $ Diabetes_binary       : num  0 1 1 1 0 0 1 0 1 0 ...
+    ##  $ HighBP                : num  1 1 0 1 1 1 1 1 1 0 ...
+    ##  $ HighChol              : num  1 1 1 1 0 1 1 1 0 1 ...
+    ##  $ CholCheck             : num  1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ BMI                   : num  38 28 32 25 35 45 25 37 30 36 ...
+    ##  $ Smoker                : num  1 1 0 1 1 1 1 1 0 0 ...
+    ##  $ Stroke                : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ HeartDiseaseorAttack  : num  0 1 1 1 0 1 0 0 0 0 ...
+    ##  $ PhysActivity          : num  0 0 1 0 1 1 0 1 1 0 ...
+    ##  $ Fruits                : num  1 0 0 1 1 1 0 1 0 0 ...
+    ##  $ Veggies               : num  1 1 0 1 1 1 0 1 0 1 ...
+    ##  $ HvyAlcoholConsump     : num  0 0 0 0 0 0 0 0 0 0 ...
+    ##  $ AnyHealthcare         : num  1 1 1 1 1 1 1 1 1 0 ...
+    ##  $ NoDocbcCost           : num  0 0 0 0 0 1 0 0 0 1 ...
+    ##  $ GenHlth               : num  5 4 1 5 4 5 4 3 3 4 ...
+    ##  $ MentHlth              : num  15 0 0 15 0 5 3 0 0 0 ...
+    ##  $ PhysHlth              : num  30 0 0 30 1 10 6 0 7 30 ...
+    ##  $ DiffWalk              : num  1 0 1 1 1 1 1 0 1 0 ...
+    ##  $ Sex                   : num  0 1 0 0 1 0 1 0 0 1 ...
+    ##  $ Age                   : num  13 12 13 9 9 7 12 11 10 5 ...
+    ##  $ Education             : num  2 2 2 2 2 2 2 2 2 2 ...
+    ##  $ Income                : num  3 4 2 3 5 2 2 2 3 3 ...
+    ##  $ Diabetes_binary_f     : Factor w/ 2 levels "0","1": 1 2 2 2 1 1 2 1 2 1 ...
+    ##  $ HighBP_f              : Factor w/ 2 levels "0","1": 2 2 1 2 2 2 2 2 2 1 ...
+    ##  $ HighChol_f            : Factor w/ 2 levels "0","1": 2 2 2 2 1 2 2 2 1 2 ...
+    ##  $ CholCheck_f           : Factor w/ 2 levels "0","1": 2 2 2 2 2 2 2 2 2 2 ...
+    ##  $ Smoker_f              : Factor w/ 2 levels "0","1": 2 2 1 2 2 2 2 2 1 1 ...
+    ##  $ Stroke_f              : Factor w/ 2 levels "0","1": 1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ HeartDiseaseorAttack_f: Factor w/ 2 levels "0","1": 1 2 2 2 1 2 1 1 1 1 ...
+    ##  $ PhysActivity_f        : Factor w/ 2 levels "0","1": 1 1 2 1 2 2 1 2 2 1 ...
+    ##  $ Fruits_f              : Factor w/ 2 levels "0","1": 2 1 1 2 2 2 1 2 1 1 ...
+    ##  $ Veggies_f             : Factor w/ 2 levels "0","1": 2 2 1 2 2 2 1 2 1 2 ...
+    ##  $ HvyAlcoholConsump_f   : Factor w/ 2 levels "0","1": 1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ AnyHealthcare_f       : Factor w/ 2 levels "0","1": 2 2 2 2 2 2 2 2 2 1 ...
+    ##  $ NoDocbcCost_f         : Factor w/ 2 levels "0","1": 1 1 1 1 1 2 1 1 1 2 ...
+    ##  $ GenHlth_f             : Factor w/ 5 levels "1","2","3","4",..: 5 4 1 5 4 5 4 3 3 4 ...
+    ##  $ DiffWalk_f            : Factor w/ 2 levels "0","1": 2 1 2 2 2 2 2 1 2 1 ...
+    ##  $ Sex_f                 : Factor w/ 2 levels "0","1": 1 2 1 1 2 1 2 1 1 2 ...
+    ##  $ Age_f                 : Factor w/ 13 levels "1","2","3","4",..: 13 12 13 9 9 7 12 11 10 5 ...
+    ##  $ Education_f           : Factor w/ 5 levels "2","3","4","5",..: 1 1 1 1 1 1 1 1 1 1 ...
+    ##  $ Income_f              : Factor w/ 8 levels "1","2","3","4",..: 3 4 2 3 5 2 2 2 3 3 ...
+
+    # a numerical summary for BMI
+    temp%>%summarize(mean=mean(BMI),median=median(BMI),std=sd(BMI))
+
+    ##       mean median      std
+    ## 1 29.46313     28 7.050181
+
+    # a numerical summary for MentHlth
+    temp%>%summarize(mean=mean(MentHlth),median=median(MentHlth),std=sd(MentHlth))
+
+    ##       mean median      std
+    ## 1 5.219113      0 9.774662
+
+    # a numerical summary for PhysHlth
+    temp%>%summarize(mean=mean(PhysHlth),median=median(PhysHlth),std=sd(PhysHlth))
+
+    ##       mean median      std
+    ## 1 8.367797      1 11.60793
+
+After confirming correct data subsetting, for each factor variable in
+the dataset, we have calculated the prevalence of diabetes at each level
+of said factor in hopes of identifying any bi-variate associations with
+diabetes. In addition, for each factor variable, we graphically display
+(1) the relative frequency of patients within factor levels, and (2) the
+proportion of patients within each level of each factor that do and do
+not have diabetes.
+
+For continuous predictor variables, we have generated a correlation
+matrix (the outcome of interest is also included in this correlation
+matrix). We also generate density plots and boxplots for each continuous
+predictor using the dichotomous outcome measure as a “by” variable for
+each of these plots.
 
     #function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
-    #(I still need to flesh out this function such that it labels the plots)
     explore <- function(by_var)
     {
     results1 <- temp %>%
@@ -159,7 +270,8 @@ level) data.
     print(results1)
 
     results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) + 
-      geom_bar(stat="count")
+      geom_bar(stat="count") +
+      labs(title = "Presence of diabetes, by select factors")
     print(results2)
     }
 
@@ -172,7 +284,7 @@ level) data.
     ## 1 0                0.154
     ## 2 1                0.388
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-2.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-1.png)
 
     explore(by_var = HighChol_f)
 
@@ -182,7 +294,7 @@ level) data.
     ## 1 0                  0.180
     ## 2 1                  0.389
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-3.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-2.png)
 
     explore(by_var = CholCheck_f)
 
@@ -192,7 +304,7 @@ level) data.
     ## 1 0                  0.0672
     ## 2 1                  0.298
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-4.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-3.png)
 
     explore(by_var = Smoker_f)
 
@@ -202,7 +314,7 @@ level) data.
     ## 1 0                0.281
     ## 2 1                0.303
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-5.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-4.png)
 
     explore(by_var = Stroke_f)
 
@@ -212,7 +324,7 @@ level) data.
     ## 1 0                0.280
     ## 2 1                0.417
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-6.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-5.png)
 
     explore(by_var = HeartDiseaseorAttack_f)
 
@@ -222,7 +334,7 @@ level) data.
     ## 1 0                              0.250
     ## 2 1                              0.467
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-7.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-6.png)
 
     explore(by_var = PhysActivity_f)
 
@@ -232,7 +344,7 @@ level) data.
     ## 1 0                      0.325
     ## 2 1                      0.267
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-8.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-7.png)
 
     explore(by_var = Fruits_f)
 
@@ -242,7 +354,7 @@ level) data.
     ## 1 0                0.301
     ## 2 1                0.285
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-9.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-8.png)
 
     explore(by_var = Veggies_f)
 
@@ -252,7 +364,7 @@ level) data.
     ## 1 0                 0.314
     ## 2 1                 0.282
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-10.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-9.png)
 
     explore(by_var = HvyAlcoholConsump_f)
 
@@ -262,7 +374,7 @@ level) data.
     ## 1 0                           0.296
     ## 2 1                           0.116
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-11.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-10.png)
 
     explore(by_var = AnyHealthcare_f)
 
@@ -272,7 +384,7 @@ level) data.
     ## 1 0                       0.188
     ## 2 1                       0.311
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-12.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-11.png)
 
     explore(by_var = NoDocbcCost_f)
 
@@ -282,7 +394,7 @@ level) data.
     ## 1 0                     0.292
     ## 2 1                     0.292
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-13.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-12.png)
 
     explore(by_var = GenHlth_f)
 
@@ -295,7 +407,7 @@ level) data.
     ## 4 4                 0.356
     ## 5 5                 0.474
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-14.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-13.png)
 
     explore(by_var = DiffWalk_f)
 
@@ -305,7 +417,7 @@ level) data.
     ## 1 0                  0.220
     ## 2 1                  0.409
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-15.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-14.png)
 
     explore(by_var = Sex_f)
 
@@ -315,7 +427,7 @@ level) data.
     ## 1 0             0.310
     ## 2 1             0.270
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-16.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-15.png)
 
     explore(by_var = Age_f)
 
@@ -336,7 +448,7 @@ level) data.
     ## 12 12           0.361 
     ## 13 13           0.287
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-17.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-16.png)
 
     explore(by_var = Income_f)
 
@@ -352,7 +464,7 @@ level) data.
     ## 7 7                0.166
     ## 8 8                0.161
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-18.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-17.png)
 
     #correlation matrix (outcome var x continuous vars)
     corr_vars <-
@@ -361,34 +473,41 @@ level) data.
     corrplot(correlation, type = "upper", tl.pos = "lt")
     corrplot(correlation, type = "lower", method = "number", add = TRUE, diag = FALSE, tl.pos = "n")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-19.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-18.png)
 
     #density plots / boxplots (outcome var x continuous vars)
     #I'm guessing we could just choose one or the other
     ggplot(data=temp, aes(x=BMI, fill=Diabetes_binary_f)) + 
-      geom_density(adjust = 0.5, alpha = 0.5)
+      geom_density(adjust = 0.5, alpha = 0.5) +
+      labs(title = "BMI, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-20.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-19.png)
 
-    ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot()
+    ggplot(data=temp, aes(x=Diabetes_binary_f, y=BMI)) + geom_boxplot() +
+      labs(title = "BMI, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-21.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-20.png)
 
     ggplot(data=temp, aes(x=MentHlth, fill=Diabetes_binary_f)) + 
-      geom_density(adjust = 0.5, alpha = 0.5)
+      geom_density(adjust = 0.5, alpha = 0.5) +
+      labs(title = "Number of poor mental health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-22.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-21.png)
 
-    ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot()
+    ggplot(data=temp, aes(x=Diabetes_binary_f, y=MentHlth)) + geom_boxplot() +
+      labs(title = "Number of poor mental health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-23.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-22.png)
 
     ggplot(data=temp, aes(x=PhysHlth, fill=Diabetes_binary_f)) + 
-      geom_density(adjust = 0.5, alpha = 0.5)
+      geom_density(adjust = 0.5, alpha = 0.5) +
+      labs(title = "Number of poor physical health days, by diabetes status")
 
-![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-6-24.png)
+![](ed_level_eq_2_files/figure-markdown_strict/unnamed-chunk-72-23.png)
 
-    bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + geom_boxplot()
+    bp3 <- ggplot(data=temp, aes(x=Diabetes_binary_f, y=PhysHlth)) + 
+      geom_boxplot() + 
+      labs(title = "Number of poor physical health days, by diabetes status")
 
 # Modeling
 
@@ -398,6 +517,9 @@ reproducible. Then we will fit different models using different approach
 and provide explanations.
 
 ## Data cleaning
+
+We made a data cleaning so that the model fitting methods would work
+better.
 
     #prior to running models, in instances where we have both a factor and a non-factor version of a given variable, we need to first drop the non-factor version of the variable
     #we also need to drop both versions of the education variable (since it will not vary given that we've subset our data to a specific education level)
@@ -422,6 +544,7 @@ and provide explanations.
     temp$Education_f     <- NULL
     temp$Income  <- NULL
 
+    # convert the 0 and 1 to no and yes for logLoss metric to work.
     temp$Diabetes_binary_f<-ifelse(temp$Diabetes_binary_f==0,"no","yes")
     temp$Diabetes_binary_f<-as.factor(temp$Diabetes_binary_f)
 
@@ -466,19 +589,19 @@ Here are two website links I found useful for explaining this term:
 
 ## First method: logistic regression
 
-\###explanation of what a logistic regression is
+### explanation of what a logistic regression is
 
 The logistic regression is modeling average number of successes for a
 given x, i.e. probability of success.Basic logistic regression models
 success probability using the logistic function
 $P(success|yard)=\frac{e^{\beta\_0+\beta\_1x}}{1+e^{\beta\_0+\beta\_1x}}$
 
-\###why we apply it to this kind of data We have a response variable
-that is success/failure and it is perfect for fitting a logistic
-regression mode.
+### why we apply it to this kind of data
 
-\###fit three candidate logistic regression models and choose the best
-model.
+We have a response variable that is success/failure and it is perfect
+for fitting a logistic regression mode.
+
+### fit three candidate logistic regression models and choose the best model.
 
     ed_logistic1<-train(Diabetes_binary_f~BMI+HighChol_f+HighBP_f,data=ed_train,
                  method="glm", 
@@ -745,15 +868,18 @@ tree splits.
 
 ## Fourth method: Random forest
 
-\###Explanation of the random forest: The random forest uses the same
-idea as bagging. It creates multiple trees from bootstrap samples and
-averages results. It uses a random subset of predictors for each
-bootstrap sample fit.
+### Explanation of the random forest:
 
-\###why we might use it instead of a basic classification tree: We want
-to use random forest because we do not want to use all the predictors.If
-a really strong predictor exists, every bootstrap tree will probably use
-it for the first split and it will make the prediction more correlated.
+The random forest uses the same idea as bagging. It creates multiple
+trees from bootstrap samples and averages results. It uses a random
+subset of predictors for each bootstrap sample fit.
+
+### why we might use it instead of a basic classification tree:
+
+We want to use random forest because we do not want to use all the
+predictors.If a really strong predictor exists, every bootstrap tree
+will probably use it for the first split and it will make the prediction
+more correlated.
 
     ed_rf<-train(Diabetes_binary_f~.,#BMI+HighBP_f+HighChol_f
                  data=ed_train,
@@ -795,6 +921,31 @@ classifiers (i.e. 10).
 
     ed_rot
 
+    ## Rotation Forest 
+    ## 
+    ## 2952 samples
+    ##   20 predictor
+    ##    2 classes: 'no', 'yes' 
+    ## 
+    ## Pre-processing: centered (40), scaled (40) 
+    ## Resampling: Cross-Validated (5 fold) 
+    ## Summary of sample sizes: 2361, 2361, 2362, 2362, 2362 
+    ## Resampling results across tuning parameters:
+    ## 
+    ##   K  L  logLoss  
+    ##   1  3  0.5533886
+    ##   1  6  0.5516197
+    ##   1  9  0.5512436
+    ##   2  3  0.5521862
+    ##   2  6  0.5488242
+    ##   2  9  0.5502256
+    ##   4  3  0.5532858
+    ##   4  6  0.5508208
+    ##   4  9  0.5495331
+    ## 
+    ## logLoss was used to select the optimal model using the smallest value.
+    ## The final values used for the model were K = 2 and L = 6.
+
 ## Sixth method: Bayesian Generalized Linear Model
 
 The generalized linear model (GLM) is an approach incorporating various
@@ -819,11 +970,11 @@ distributions as model residuals and parameter uncertainty.
     ## 
     ## Pre-processing: centered (40), scaled (40) 
     ## Resampling: Cross-Validated (5 fold) 
-    ## Summary of sample sizes: 2361, 2361, 2362, 2362, 2362 
+    ## Summary of sample sizes: 2362, 2362, 2361, 2362, 2361 
     ## Resampling results:
     ## 
     ##   logLoss  
-    ##   0.5156043
+    ##   0.5164499
 
 # Final Model Selection
 
@@ -878,7 +1029,7 @@ six models on the test set and declare an overall winner!
     CM5<-choose(in_model = ed_rot)
     paste0("rotation forests has a logLoss of ",CM5)
 
-    ## [1] "rotation forests has a logLoss of 10.0749474227052"
+    ## [1] "rotation forests has a logLoss of 9.25587002575262"
 
     # Method 6
     CM6<-choose(in_model = ed_bglm)

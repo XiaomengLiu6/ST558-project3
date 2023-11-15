@@ -161,18 +161,18 @@ ggplot(data=temp, aes(x=Education_f)) +
   geom_dotplot(binwidth = .05, method = "histodot") + 
   labs(title = "confirm that we're working with the desired set of cases")
 ```
+A basic structure of the data set is shown below. Numerical summaries were made for the numerical variables. This would help us to understand more about the numerical variables.
 
 ```{r}
-# a simple EDA
+# basic structure of the data set
 str(temp)
-#MentHlth -- this is a continuous var
-#PhysHlth -- this is a continuous var
-#BMI -- this is a continuous var
 
-nume<-cbind(temp$BMI,temp$MentHlth, temp$PhysHlth)
-as.table(cbind(min(temp$BMI),sd(temp$BMI)))
-table(temp$CholCheck_f)
-temp%>%summarize(mean=mean(varb),median=median(varb),std=sd(varb))
+# a numerical summary for BMI
+temp%>%summarize(mean=mean(BMI),median=median(BMI),std=sd(BMI))
+# a numerical summary for MentHlth
+temp%>%summarize(mean=mean(MentHlth),median=median(MentHlth),std=sd(MentHlth))
+# a numerical summary for PhysHlth
+temp%>%summarize(mean=mean(PhysHlth),median=median(PhysHlth),std=sd(PhysHlth))
 ```
 
 After confirming correct data subsetting, for each factor variable in the dataset, we have calculated the prevalence of diabetes at each level of said factor in hopes of identifying any bi-variate associations with diabetes.  In addition, for each factor variable, we graphically display (1) the relative frequency of patients within factor levels, and (2) the proportion of patients within each level of each factor that do and do not have diabetes.
@@ -181,7 +181,6 @@ For continuous predictor variables, we have generated a correlation matrix (the 
 
 ```{r}
 #function to check prevalence of diabetes at each level of each factor, and generate corresponding plots
-#(I still need to flesh out this function such that it labels the plots)
 explore <- function(by_var)
 {
 results1 <- temp %>%
@@ -195,7 +194,6 @@ results2 <- ggplot(data=temp, aes(x={{by_var}}, fill=Diabetes_binary_f)) +
   geom_bar(stat="count") +
   labs(title = "Presence of diabetes, by select factors")
 print(results2)
-#Xiaomeng, I cant figure out how to pass a variable name into the title of each figure (and thus the generic title wording currently used here)
 }
 
 #probably need to run the above function for at least the sex, age, and income variables, but may not need to run it for this entire list
@@ -418,7 +416,7 @@ ed_rf
 
 The rotation forest method is similar to the random forest method in that multiple models are brought to bear -- each having different numbers and combinations of predictors -- and the resulting set of predicted values are then averaged across models (or, in the case of a categorical outcome, the most prevalent classification across models is determined).  Unlike the random forest method, however, the rotation forest method first extracts principal components from the various sets of predictor variables that are considered, and enters the principal components as predictors (as opposed to directly entering the original predictor variables as is done when using random forest).  In more general terms, the rotation forest method is essentially a twist on the random forest method whereby principal component regression (or, principal component classification) is employed.  As such, the rotation forest method is particularly well-suited for dealing with any multi-collinearity that may exist among the predictors.  When training our model, we will use the default number of variable subsets (i.e. the number of subsets that results in 3 features per subset), and the default number of base classifiers (i.e. 10).  
 
-```{r,eval=FALSE}
+```{r}
 ed_rot <- train(Diabetes_binary_f ~ ., data = ed_train,
   method = "rotationForest",
   metric="logLoss",
