@@ -15,6 +15,15 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+paste0("This is the automated generated md file for the education level ",params$ed_level)
+#education level 2:  highest level of education is grade K through 8
+#education level 3:  highest level of education is grade 9 through 11
+#education level 4:  highest level of education is a high school credential
+#education level 5:  highest level of education is "some college" or technical school
+#education level 6:  highest level of education is bachelors degree or higher
+```
+
 # library
 ```{r, message=FALSE}
 library(readr)
